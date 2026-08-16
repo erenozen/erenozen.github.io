@@ -92,9 +92,10 @@ function topN(pool, key, limit) {
 }
 
 function passes(i, f) {
-  if (f.topicMask && !(topicMask[i] & f.topicMask)) return false;
+  if (f.blogId >= 0 && blogId[i] !== f.blogId) return false;
+  if (f.topicMask && !(topicMask[i] & 0x0fff & f.topicMask)) return false;
   const ks = kindSource[i];
-  if (f.hideNews && (f.hiddenSourceMask >> (ks >> 3)) & 1) return false;
+  if (f.blogId < 0 && f.hideNews && (f.hiddenSourceMask >> (ks >> 3)) & 1) return false;
   if (f.kindMask && !((f.kindMask >> (ks & 7)) & 1)) return false;
   return true;
 }
@@ -110,6 +111,8 @@ function emit(ordered, total) {
     k: kindSource[i] & 7,
     s: kindSource[i] >> 3,
     h: hnId[i],
+    kr: (topicMask[i] >> 14) & 1,   // kind came from a title rule, not a fallback
+    dead: (topicMask[i] >> 15) & 1,
   }));
   return { rows, total };
 }

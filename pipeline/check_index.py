@@ -52,11 +52,14 @@ def main():
 
     check(max(blog_ids) < nb, f"all blogId in range (max {max(blog_ids)} < {nb})")
     check(min(pts) >= 25, f"all posts clear the 25-point bar (min {min(pts)})")
-    check(max(t.bit_length() for t in tm) <= 12, "topic mask within 12 topics")
+    check(max((t & 0x0FFF).bit_length() for t in tm) <= 12, "topic mask within 12 topics")
+    n_rule = sum(1 for t in tm if t & (1 << 14))
+    check(0.10 < n_rule / n < 0.60,
+          f"kind rules fire on a sane share ({n_rule/n:.1%} rule-derived)")
     check(max(k >> 3 for k in ks) < len(meta["sources"]), "source index in range")
     check(max(k & 7 for k in ks) < len(meta["kinds"]), "kind index in range")
-    check(sum(1 for t in tm if t == 0) < n * 0.05,
-          f"under 5% of posts have no topic ({sum(1 for t in tm if t==0)/n:.1%})")
+    check(sum(1 for t in tm if (t & 0x0FFF) == 0) < n * 0.05,
+          f"under 5% of posts have no topic ({sum(1 for t in tm if (t&0x0FFF)==0)/n:.1%})")
 
     check(sum(1 for h in hn if h == 0) < n * 0.01,
           f"HN ids present ({sum(1 for h in hn if h==0)} missing)")

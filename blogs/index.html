@@ -63,18 +63,30 @@
                         <button data-sort="date">Newest</button>
                         <button data-sort="oldest">Oldest</button>
                     </div>
-                    <span class="sep">·</span>
+                    <span class="spacer"></span>
                     <label class="toggle">
                         <input type="checkbox" id="hide-news" checked />
-                        <span>Hide newsrooms &amp; vendor posts</span>
+                        <span>Hide newsrooms</span>
                     </label>
-                    <span class="sep">·</span>
+                </div>
+                <div class="filter-row secondary">
+                    <span class="sort-label">Kind</span>
                     <div class="filter-row inline" id="kinds"></div>
                     <span class="spacer"></span>
                     <button id="reset" class="reset" hidden>clear filters</button>
                 </div>
             </div>
 
+            <div class="suggests" id="suggests" hidden>
+                <span>Try</span>
+                <button data-q="how dns works">how dns works</button>
+                <button data-q="sqlite internals">sqlite internals</button>
+                <button data-q="postmortem outage">postmortem outage</button>
+                <button data-q="writing a compiler">writing a compiler</button>
+                <button data-q="rust async runtime">rust async runtime</button>
+            </div>
+
+            <div class="pin" id="pin" hidden></div>
             <div class="status" id="status" aria-live="polite"></div>
             <ol class="results" id="results"></ol>
             <div class="more-wrap">

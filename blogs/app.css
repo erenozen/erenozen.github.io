@@ -31,6 +31,13 @@
     box-sizing: border-box;
 }
 
+/* The `hidden` attribute is only display:none in the UA stylesheet, so any
+   author rule setting display (e.g. `.pin { display: flex }`) silently beats
+   it and the element stays on screen. */
+[hidden] {
+    display: none !important;
+}
+
 body {
     background: var(--bg);
     color: var(--fg);
@@ -278,6 +285,81 @@ body {
     font-weight: 500;
 }
 
+.suggests {
+    margin-top: 0.7rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+}
+
+.suggests button {
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: var(--accent);
+    background: transparent;
+    border: 1px dashed var(--chip-border);
+    border-radius: 999px;
+    padding: 0.14rem 0.6rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.suggests button:hover {
+    border-style: solid;
+    border-color: var(--accent);
+    background: var(--hover);
+}
+
+.pin {
+    margin-top: 0.8rem;
+    padding: 0.5rem 0.7rem;
+    border-left: 3px solid var(--accent);
+    background: var(--chip-bg);
+    border-radius: 0 6px 6px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.pin-name {
+    font-weight: 600;
+    color: var(--fg);
+    text-decoration: none;
+    letter-spacing: -0.2px;
+}
+.pin-name:hover {
+    color: var(--accent);
+}
+
+.pin-desc {
+    font-size: 0.84rem;
+    color: var(--desc-text);
+    flex: 1;
+    min-width: 12rem;
+}
+
+.pin-clear {
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.pin-clear:hover {
+    text-decoration: underline;
+}
+
+.blog-open {
+    cursor: pointer;
+    font-family: inherit;
+}
+
 /* --- Status --- */
 .status {
     margin: 0.9rem 0 0.3rem;
@@ -344,6 +426,9 @@ body {
 .r-pts {
     font-family: "Ubuntu Mono", monospace;
 }
+.dot {
+    opacity: 0.35;
+}
 .r-tag {
     border: 1px solid var(--chip-border);
     border-radius: 999px;
@@ -357,8 +442,11 @@ body {
 }
 
 /* HN thread link -- sits beside the row, not inside it, so the row's own link
-   still covers the whole article target. */
-.results li.post-li {
+   still covers the whole article target.
+   Every li must establish a containing block: without it these absolutely
+   positioned buttons escape their row, stack on top of each other, and steal
+   clicks meant for the row below. */
+.results li {
     position: relative;
 }
 
@@ -393,6 +481,20 @@ body {
     .hn-link {
         opacity: 1;
     }
+}
+
+.r-dead {
+    color: #b4551f;
+    border-color: currentColor;
+    opacity: 0.9;
+}
+[data-theme="dark"] .r-dead {
+    color: #fe8019;
+}
+
+/* When a row carries both an archive link and the HN link, stack them. */
+.arc-link {
+    right: 7.4rem;
 }
 
 /* --- Empty / no-results --- */

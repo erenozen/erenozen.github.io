@@ -199,6 +199,7 @@ Apple just kicked Fortnite off the App Store
 AWS CEO says using AI to replace junior staff is 'Dumbest thing I've ever heard'
 Google Fires Employee Behind Controversial Diversity Memo
 Firefox 57.0 Released
+Firefox is now the last major browser that still supports uBlock Origin
 XKeyscore: NSA program collects 'nearly everything a user does on the internet'
 Amazon to Acquire Whole Foods for $13.7B
 The young, inexperienced engineers aiding DOGE
@@ -212,7 +213,6 @@ We Stood Up to a Patent Troll and Won
 Raspberry Pi 5
 It’s time to give Firefox another chance
 RethinkDB is shutting down
-Firefox is now the last major browser that still supports uBlock Origin
 AWS services explained in one line each
 Google terminated our business via our Google Play Developer Account
 Steve Jobs Resigns as CEO of Apple
@@ -627,9 +627,9 @@ Warp – Mobile VPN
 Documenting the Web together
 Apple CEO Tim Cook 'secretly' signed $275B deal with China in 2016
 A from-scratch tour of Bitcoin in Python
+Tracking down the 16-year-old WAL-reset SQLite bug
 The United States and Israel have launched a major attack on Iran
 Google achieves AI 'breakthrough' by beating Go champion
-Tracking down the 16-year-old WAL-reset SQLite bug
 How Israeli actions caused famine in Gaza, visualized
 Cosmopolitan Third Edition
 EU Announces That All Scientific Articles Should Be Freely Accessible by 2020
@@ -716,10 +716,10 @@ Apple ordered by UK to create global iCloud encryption backdoor
 New models and developer products
 The day Windows died
 Please Make Google AMP Optional
+GLM-5.3: Frontier coding with emergent cyber capabilities
 Penpot: Open-source design and prototyping platform
 Apple Sign In
 How to C in 2016
-GLM-5.3: Frontier coding with emergent cyber capabilities
 USB-C hubs and my slow descent into madness (2021)
 How Uber Used Secret “Greyball” Tool to Deceive Authorities Worldwide
 Dutch government says no to backdoors, grants $540k to OpenSSL
@@ -789,9 +789,9 @@ Introducing OpenAI
 FTC Probing Facebook for Use of Personal Data, Source Says
 Nvidia is reportedly in ‘advanced talks’ to buy ARM for more than $32B
 Linux Mint drops Ubuntu Snap packages
+What happens if an entire class of workers loses faith in their careers
 Beyond Meat signs global supply deals with McDonald’s, KFC and Pizza Hut
 Bike crash left Spokane man unconscious, so his Apple Watch called 911
-What happens if an entire class of workers loses faith in their careers
 Why nobody ever wins the car at the mall
 Liquid water 'lake' revealed on Mars
 I love you, dad
@@ -1259,9 +1259,9 @@ If the moon were only 1 pixel: A tediously accurate solar system model (2014)
 Before you buy a domain name, first check to see if it's haunted
 Chrome ships WebGPU
 How I make a living working on SerenityOS
+As AI eats the web, the internet’s collective memory is disappearing
 I Am An Object Of Internet Ridicule, Ask Me Anything
 HIV Is Reported Cured in a Second Patient
-As AI eats the web, the internet’s collective memory is disappearing
 Software Disenchantment (2018)
 More bosses give four-day workweek a try
 A year later, Equifax has faced little fallout from losing data
@@ -3209,6 +3209,7 @@ Brave Improves Its Ad-Blocker Performance with New Engine in Rust
 Samsung used my DSLR photo to fake their phone’s “portrait mode”
 Amazon's Tepid Response to Counterfeiters Frustrates Sellers
 In Memoriam: Christopher Hitchens, 1949–2011
+Compression is prediction
 Windows 11's built-in Weather app wastes more than 1 GB of RAM
 How to talk to anyone and why you should
 City Roads – Draw all roads in a city at once
@@ -3220,7 +3221,6 @@ Initial preview of GUI app support for the Windows Subsystem for Linux
 De-Escalation Keeps Protesters and Police Safer
 Samsung: Anyone's thumbprint can unlock Galaxy S10 phone
 5G Is Likely to Put Weather Forecasting at Risk
-Compression is prediction
 Ruby core team takes ownership of RubyGems and Bundler
 OpenAI reaches agreement to buy Windsurf for $3B
 Brazil's government-run payments system has become dominant
@@ -5886,6 +5886,7 @@ Amazon Is a Monopoly
 ATDT relief
 How the Bitcoin protocol actually works
 ‘Goodbye Photoshop’ and ‘Hello Krita’ at University Paris 8
+OpenAI’s head of ethics leaves less than a year after joining
 The startup's Postgres survival guide
 US healthcare marketplaces shared citizenship and race data with ad tech giants
 Alibaba Cloud says it cut Nvidia AI GPU use by 82% with new pooling system
@@ -5915,7 +5916,6 @@ We Hire the Best, Just Like Everyone Else
 Google Is Developing Its Own Uber Competitor
 Programming paradigms that change how you think about coding
 Crash Course: Design for Startups
-OpenAI’s head of ethics leaves less than a year after joining
 GPT Image 1.5
 Fujitsu bugs that sent innocent people to prison were known "from the start"
 Amazon to Lay Off over 17,000 Workers, More Than First Planned
@@ -7660,6 +7660,7 @@ iOS 11 Horror Story: The Rise and Fall of iOS Security
 Chrome Won
 The State of Go
 Walmart Node.js Memory Leak
+Count Binface receives over a quarter of votes in Clacton by-election
 The Emacsification of Software
 Shai-Hulud Themed Malware Found in the PyTorch Lightning AI Training Library
 4Chan mocks £520k fine for UK online safety breaches
@@ -7683,7 +7684,6 @@ Giraffes Added to the Endangered Species List (2016)
 120M American Households Exposed In 'Massive' ConsumerView Database Leak
 Uber's Design Meltdown
 How Target Figured Out A Teen Girl Was Pregnant Before Her Father Did
-Count Binface receives over a quarter of votes in Clacton by-election
 First public macOS kernel memory corruption exploit on Apple M5
 Cloudflare Email Service
 Apple Just Lost Me
@@ -8651,6 +8651,7 @@ Firefox fixes save gigabytes of memory on image-heavy pages
 The NSA slide you haven’t seen
 Tangle is a JavaScript library for creating reactive documents.
 HTML5 localStorage allows sites to fill up users' hard disks
+Go is an ideal language for AI-assisted software engineering
 User Interfaces of the Demo Scene
 Chimpanzees in Uganda locked in eight-year 'civil war', say researchers
 We found an undocumented bug in the Apollo 11 guidance computer code
@@ -8694,7 +8695,6 @@ Making sure crypto remains insecure [pdf]
 Reddit Acquires Alien Blue, the Most Popular Unofficial Reddit App
 Yale students made a better version of its course catalog. Yale shut it down
 Top Programming Fonts
-Go is an ideal language for AI-assisted software engineering
 Windows 11's Patch Tuesday nightmare gets worse
 ChatGPT Health
 Pro-democracy HK tycoon Jimmy Lai convicted in national security trial
@@ -8735,6 +8735,7 @@ Cache is the new RAM
 Hyperlapse, Instagram's new video stabilization app
 Web Framework Benchmarks
 Jwz: Google's pseudonym support "obvious bullshit"
+Everything you do is being recorded
 WiFi could become an invisible mass surveillance system
 Ardour 8.0
 GLM-4.7: Advancing the Coding Capability
@@ -8773,7 +8774,6 @@ The Cold Hard Facts of Freezing to Death (1997)
 Android Design
 It’s Official: HP Kills Off webOS Phones and the TouchPad
 Sleep is more important than food
-Everything you do is being recorded
 MacBook Neo is so popular that Apple doubled production
 32GB of DDR5 now costs $375 – AI shortage continues to squeeze PC building
 Paged Out Issue #8 [pdf]
@@ -8821,6 +8821,7 @@ Show HN: my Mac app just got fireballed
 A profitable, growing, useful, legal, well-loved... failure
 Are jobs obsolete?
 Google Cars Drive Themselves, in Traffic
+Understanding is the new bottleneck
 Beating GPT-5.6 Sol on retrieval with 100x cheaper open models
 Nano Banana 2 Lite
 The Coming Loop
@@ -8861,7 +8862,6 @@ This Photograph Is Not Free
 When Patents Attack
 Jason Fried: Why I Run a Flat Company
 The End Of The CrunchPad
-Understanding is the new bottleneck
 'VPNs are lawful technical tools,' says EU Court in landmark copyright ruling
 Qwen3.5: Towards Native Multimodal Agents
 Breaking the spell of vibe coding
@@ -11014,6 +11014,7 @@ Search, Mad Men style: A complete IBM 362 Google interface in the browser
 Comcast is donating to defeat mayor who is bringing gigabit fiber to Seattle
 Linode NextGen: RAM Upgrade
 Visual Studio and Team Foundation Server will have Git support
+Taxi drivers rarely die of Alzheimer's
 The future of Flipper Zero development
 Radicle: A decentralized alternative to GitHub built on IPFS
 UK House of Lords attempting to ban use of VPNs by anyone under 16
@@ -11066,7 +11067,6 @@ Why We Can No Longer Trust Microsoft
 Most data isn’t “big,” and businesses are wasting money pretending it is
 Another Airbnb Victim Tells His Story: “There Were Meth Pipes Everywhere”
 Wired's bullshit "The web is dead" graph
-Taxi drivers rarely die of Alzheimer's
 Buried Apple feature turns an iPhone into the perfect kids' dumb phone
 Muse Spark: Scaling towards personal superintelligence
 What is a manifold?
@@ -12086,6 +12086,7 @@ The biggest merger you didn't hear about today
 Why Should I Care That No One’s Reading Dzhokhar Tsarnaev His Miranda Rights?
 The FBI's files on Steve Jobs
 What I Wish Someone Had Told Me About Startups 4 Years Ago
+Seven books I keep close because I love them
 Agent Skills
 Using coding assistance tools to revive projects you never were going to finish
 Debian decides not to decide on AI-generated contributions
@@ -12276,7 +12277,6 @@ Fukushima leak is 'much worse than we were led to believe'
 Secret government: America against democracy
 A new Light Table experience
 I was on BloombergTV talking SOPA today - how'd I do?
-Seven books I keep close because I love them
 Postgres LISTEN/NOTIFY actually scales
 Warp is now open-source
 Discret 11, the French TV encryption of the 80s
@@ -15819,6 +15819,7 @@ Next Time Your Mom Says Don't Go Out in The Rain, Spray Yourself With This
 Engineers suck at finding the right jobs
 Did GitHub Suspend Egor Homakov account?
 Finally, a Startup Visa That Works
+RISC-V: They Should Have Known Better
 WHO declares Ebola outbreak a global health emergency
 Tesla Solar Roof is on life support as it pivot to panels
 Granite 4.1: IBM's 8B Model Matching 32B MoE
@@ -20289,7 +20290,6 @@ New leukemia treatment "exceeded our wildest expectations"
 Google's Backdoor Access System into Gmail Accounts
 Living in the zone
 Wakemate (YC S09) helps you kiss groggy mornings goodbye
-RISC-V: They Should Have Known Better
 Paged Out #9 [pdf]
 Netherlands Seizes 800 Servers, Arrests 2 for Aiding Cyberattacks
 Tesla owner won $10k in court for Tesla's FSD lies. Tesla is still fighting him
@@ -22644,6 +22644,7 @@ Man-made super flu could kill half of humanity
 Hacker puts a video cam on an RC truck and saves the lives of 6 soldiers
 The Chair
 Designers, how do we get you guys to contribute to open source projects?
+Super El Niño Keeps Growing as New Forecasts Reach Record Territory Ahead Winter
 Germany set to restrict its Freedom of Information Act
 Bitwarden scrubs 'Always free' and 'Inclusion' values from its site
 AIs can't stop recommending nuclear strikes in war game simulations
@@ -23713,6 +23714,7 @@ Airbnb Competitor Checks IDs: 'We Don't Want to Trade Security for Volume'
 IBM develops 'instantaneous' memory, 100x faster than flash
 PSN has been hacked again
 Doom engine code review
+At-home test for infected ticks could improve Lyme Disease diagnosis
 F* – An ML-like functional programming language aimed at program verification
 NSA lost access to Mythos amid Anthropic dispute
 Microsoft Copilot Cowork Exfiltrates Files
@@ -24507,6 +24509,7 @@ Whoa, Google, That's A Pretty Big Security Hole
 Things I've Learned from Traveling Around the World for Three Years
 SeaMicro drops an atom bomb on the server industry
 Google ditches Windows on security concerns
+Water system controllers don't belong on the internet, says ex-NSA chief
 Why Do We Sleep Under Blankets, Even on the Hottest Nights? (2017)
 Experience: We found a baby on the subway – now he's our 26-year-old son
 The quiet disappearance of the free-range childhood
@@ -24662,7 +24665,6 @@ White House: What's Blocking Innovation in America?  My Answer: IP Laws
 At My Wit’s End: Jason Calacanis Threatens To Sue Us
 For the First Time, the TSA Meets Resistance
 Google Groups is Dead
-Water system controllers don't belong on the internet, says ex-NSA chief
 I stopped trusting USB-C cable labels and started testing them
 1,300 Beautiful Wildlife Illustrations from the 19th Century Now Restored
 I Made the "Next-Level" Camera and I love it
@@ -25681,7 +25683,6 @@ SpaceX to fly to International Space Station in November
 US claims all .com and .net websites are in its jurisdiction
 Using Flat Files So Elections Don’t Break Your Server
 How to build discipline and brainwash yourself
-At-home test for infected ticks could improve Lyme Disease diagnosis
 Donate to GrapheneOS
 Designing an Ethernet Switch ASIC
 Samsung chip workers will get an average $340k bonus as AI profits soar
@@ -29739,6 +29740,7 @@ Groupon files for IPO
 LevelDB: a fast and lightweight key/value database library
 Japan Airlines' CEO pays himself less than the pilots, takes the bus to work
 Announcing WebKit2
+France's top court blocks social media ban for under-15s
 I requested a copy of my data from McDonald’s loyalty program
 AI 2040 and the cult of intelligence
 Crypto firms have spent $189M so far on 2026 US election, report says
@@ -30176,7 +30178,6 @@ The worsening journalistic disgrace at Wired
 Using genetic algorithms to find Starcraft 2 build orders
 The Unofficial HN FAQ
 Daring Fireball: "Facebook login"
-France's top court blocks social media ban for under-15s
 Redis 8.8: New array data structure, rate limiter, performance improvements
 Microsoft reports AI is more expensive than paying human employees
 Israel's AI targeting system: how data from a phone become a death sentence
@@ -35874,7 +35875,6 @@ How I almost ignored our single best source for customer feedback.
 The Irony of iPad: A Great Day For Open Technologies
 My Life Offline
 Unladen Swallow  can now compile all Python code to native code using LLVM
-Super El Niño Keeps Growing as New Forecasts Reach Record Territory Ahead Winter
 Why some people mow a lawn better than others
 Guerrilla London bus ads mock Kylie Jenner’s Meta glasses campaign
 Swiss voters reject proposal to cap population at ten million
@@ -39169,6 +39169,7 @@ How Carrots Became the new Junk Food
 Codified startup advice
 IBM's Watson AI trumps humans in "Jeopardy!"
 College dropout makes  $100,000 a year, with a two-day workweek
+U of Michigan drops first-semester grades to ‘curb mental health crisis’
 Microsoft Edge is about to lock out older ad blockers, just like Chrome did
 CodePen 2.0
 I built a GPU back end for Emacs
@@ -39452,7 +39453,6 @@ Google releases Skipfish, an open-source web security scanner
 Mahalo's disappearing noindex tags
 Joel Spolsky On Why He Is Quitting Blogging
 Chatroulette Creator Is A 17-Year-Old Russian Kid
-U of Michigan drops first-semester grades to ‘curb mental health crisis’
 Some thoughts about Anthropic's new cryptanalysis results
 The disappearance of Japan's animators
 How Terry Tao became an evangelist for AI in math
@@ -42971,6 +42971,7 @@ Why Users Fill Out Forms Faster With Top Aligned Labels
 Guido van Rossum: Thoughts about Python Future
 How Richard Stallman Browses the Internet
 The end of Haiti?
+Asynchronous I/O in DuckDB: Work, Thread, Work
 Celebrating 45 Years of Kermit with the First New C-Kermit Release in 15 Years
 I wanted a clock that never needed setting. Things escalated
 I burned all my tokens researching how to save tokens
@@ -56332,6 +56333,7 @@ James Gosling leaves Oracle
 Google AI Challenge: Winner post-mortem and source code
 CSS Techniques I Wish I Knew When I Started Designing Websites
 Don’t Work for Assholes
+Text AI watermarks will always be trivial to remove
 How Cops Are Trying to Hide Their Use of Flock
 Mosh's tolerance for high packet loss helps a guy escape from an elevator
 The death and rebirth of my home server
@@ -56559,7 +56561,6 @@ NoSQL vs. RDBMS: Let the flames begin
 Step one is admitting you have a problem
 Sprezzatura
 The Firefox 3.5 fiasco
-Text AI watermarks will always be trivial to remove
 Codeberg Divides
 EMACS: The Extensible, Customizable Display Editor (1981)
 The Doom Justifies the Valuation
@@ -58339,6 +58340,7 @@ Happy Holidays from the App Engine team - 1.4.0 SDK released
 Why Google can’t build Instagram
 TorrentFreak: Don't bash Google for Net Neutrality, it never existed anyway
 Varnish guy's hatred for autoconf
+Racket v9.3
 Your code is fast if you're lucky
 The firefighting system of the Van der Heyden brothers in 17th century Amsterdam
 Stealing from Biologists to Compile Haskell Faster
@@ -58557,7 +58559,6 @@ Dear American Airlines...
 How to block the DiggBar
 6 months later, the Intel SSDs are still massively better
 Introducing Mozilla Bespin, a Canvas-based IDE
-Racket v9.3
 Illinois just told every operating system to start reporting your kid's age
 SIMD for Collision
 Israeli spyware vans infiltrate American streets and your phones
@@ -60562,7 +60563,6 @@ DHH vs. Calacanis on This Week in Startups
 How to hack your brain - Part I: Sleep
 VPS Comparison between Slicehost and Prgmr: is an $8 instance as good as a $20 one?
 Workplace Experiments at 37signals
-Asynchronous I/O in DuckDB: Work, Thread, Work
 Stinkpot: SQLite-backed shell history
 When AI Costs More Than the Engineer
 Apple is going to raise device prices, but when?
@@ -60817,6 +60817,7 @@ Unladen Swallow 2009Q3 Released with LLVM optimized Python
 How 4chan hacked ReCAPTCHA to win the TIME 100 Poll
 The Universal Design Pattern
 News.YC open-sourced
+The Dutch community where people live on strips of land in a lake
 The simple elegance of the integrated timing belt loopback fastener
 DConf 2026 in London
 Soatok's Informal Guide to Threat Models
@@ -62147,7 +62148,6 @@ Hilary Mason: How to Replace Yourself with a Very Small Shell Script
 Does math have big scary teeth or something?
 Six Lessons Learned from Domain Pigeon’s First Six Weeks
 How to be a better programmer in 6 minutes
-The Dutch community where people live on strips of land in a lake
 Gateway 2000's hilariously bad ads in the 90s (Part II)
 Rust-lang/rust is adopting an LLM policy
 Inkling – Open-Weights 975B Parameter LLM
@@ -65267,6 +65267,7 @@ Lambda-style anonymous functions for C++ in less than 500 lines of code
 Resist the urge to punish everyone for one person's mistake
 This is what your customers think of asking for their email password
 Google releases free, detailed, HTML/CSS/Javascript encyclopedia by Mark Pilgrim
+The Government Is Monitoring Anti-Flock TikTok and Instagram Accounts
 Rust All Hands 2026 Retrospective
 Authorize, don't authenticate
 Modder Runs GTA III Inside GTA: San Andreas on an In-Game TV
@@ -65855,6 +65856,7 @@ Unit testing in Coders at Work
 Bug #48669: PHP now includes GOTO
 How to Incorporate Stupidity Into Your AI Code
 How we use IRC at Last.fm
+Turbo Pascal on CP/M, MSX-DOS and MS-DOS
 Building a Blog with Elixir and Phoenix
 Computer Says No
 Debian Removes Free Pascal Compiler / Lazarus IDE
@@ -66171,7 +66173,6 @@ First Pictures Of Single Window Gimp
 My Sys-Con Nightmare
 The Future of Facebook Usernames
 DHH: Are you sure you want to be in San Francisco?
-Turbo Pascal on CP/M, MSX-DOS and MS-DOS
 Felix and I
 MkLinux and the pimped-out Apple Workgroup Server 9150
 Is x86 ready to ACE it?
@@ -67082,7 +67083,6 @@ Show success before asking for help
 Unladen Swallow: Making CPython Faster Using LLVM
 JQuery 1.3 Released
 Demotivating a (Good) Programmer
-The Government Is Monitoring Anti-Flock TikTok and Instagram Accounts
 An NSFW filter for Marginalia search
 TypeScript 6.0 RC
 I love email (2023)
@@ -67999,6 +67999,7 @@ VirtualBox 3.0 Released
 How I Learned French in One Year
 Google Calculating Which Employees Are About to Quit
 I Just Logged In As You
+Cursor is now a part of SpaceX
 AI has torched the market for junior programmers
 Pull request limits are cutting down the noise
 My Favorite Bugs: Invalid Surrogate Pairs
@@ -68321,7 +68322,6 @@ Joe Hewitt: On Middle Men
 Twisted Python's lead hacker discusses Tornado
 A Tour of my Brain
 Writing apps for the iPhone in Scheme
-Cursor is now a part of SpaceX
 Probably check on your smart appliances
 Don’t Outsource the Learning
 Software Developers Say AI Is Rotting Their Brains
@@ -70076,6 +70076,7 @@ Your Language Features Are My Libraries
 Why Did M.I.T. Switch from Scheme to Python?
 Three20: Open Source iPhone UI Goodness
 I hate Lisp
+A fortuitous decade as an indie software developer
 Multicore suppport for DOS is real – partly
 Comparing an LZ4 Decompressor on Four Legacy CPUs
 60fps Video on a CGA? – The GlyphBlaster
@@ -74602,6 +74603,7 @@ Coding Horror: Code: It's Trivial
 Memoirs of a Poker Bot Developer
 50% of Charges Against Pirate Bay Dropped
 Learning from "bad" UI (37signals on TripLog)
+Tracking down a Zsh history data loss bug
 Residential Proxies Are a National Security Threat
 Our Approach to Bioresilience: Isomorphic Labs and Google DeepMind
 What's slowing down the AI buildout
@@ -79865,6 +79867,7 @@ The early days: How 37signals built buzz out of the gate
 ITunes is Anti-Web
 Optimize for now!
 Thunderbird's Desktop Calendar Visual Redesign
+2D Gaussian Splatting for Bézier Spline Line Art Vectorization
 Microsoft Is Quietly Deleting Mentions of 32 GB RAM Recommendation for Win 11
 How old is Ann?
 Attention Decode on AMD MI450 GPUs: A Gluon Kernel Optimization Guide
@@ -80835,8 +80838,6 @@ The Ultimate Dogfooding Story
 Jason Scott: "A terrible thing happened recently. You might have missed it."
 Programming's Dirtiest Little Secret
 Map Reduce implemented over HTTP
-2D Gaussian Splatting for Bézier Spline Line Art Vectorization
-A fortuitous decade as an indie software developer
 California Town Says Flock Cameras Misread License Plates 71% of the Time
 Boris Cherny on Trying to Get Claude Code to Rewrite the Claude App
 Pgtestdb's template cloning approach to testing is fast
@@ -82830,7 +82831,6 @@ Microsoft's new legacy-free OS from scratch
 Quit your job
 We need a Wikipedia for data
 Why we disagree with Don Norman
-Tracking down a Zsh history data loss bug
 pg_clickhouse v0.10: Subquery pushdown and 1000x faster TPC-H queries
 How much can you delegate to agents?
 FCC bans foreign-produced solar inverters, grid lockout begins today
@@ -90467,6 +90467,7 @@ An Article About Startups That Wasn't Written By A Pretentious Asshole
 Border Security: We can take your laptop anywhere we want for as long as we want
 Awesome BlueprintCSS framework hits 0.7
 PG: Clarification about Character Sets
+NSA and IETF, Part 9
 Fixing my tooltip accessibility mistake
 Actegories
 A full body MRI earns you a year of smoking
@@ -90990,7 +90991,6 @@ Twitter's problems have never been Rails problems
 The Dumbest Thing I've Heard Warren Buffet Say
 Play Super Mario in 14kb Javascript
 Please Don't Steal My Focus
-NSA and IETF, Part 9
 Commodore 8-Bit 5¼" Disk Images
 Pass the Passkey: A Novel Attack Surface in Passwordless Authentication
 I Have Thoughts on the iPhone Air
@@ -104742,6 +104742,7 @@ The serverless Internet company
 Coding Horror: You're Probably Storing Passwords Incorrectly
 The Netflix Prize: 300 Days Later
 Stevey's Blog Rants: Rhino on Rails (straight from the horse's mouth)
+Were Touch Bar's problems software rather than hardware?
 Claude Code pricing: same tokens, same model, up to 40x the price
 The DISTINCT in Your COUNT
 The Three-Stroke Problem

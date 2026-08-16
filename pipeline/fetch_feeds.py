@@ -8,7 +8,7 @@ page. Feeds give us the blog's own view of what it published.
 Caveat baked into expectations: most feeds are truncated to the latest 10-50
 entries, so this yields freshness and depth-of-recent, not full archives.
 """
-import json, re, sys, time
+import json, os, re, sys, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin, urlparse
 
@@ -120,10 +120,24 @@ def main():
     workers = int(sys.argv[3]) if len(sys.argv) > 3 else 24
 
     blogs = [json.loads(l) for l in open(src)]
+
+    # Resumable: a full crawl is ~90 minutes and gets killed by wall-clock
+    # limits, so never truncate an existing partial result.
+    seen = set()
+    if os.path.exists(out_path):
+        for line in open(out_path):
+            try:
+                seen.add(json.loads(line).get("key"))
+            except Exception:
+                pass
+        if seen:
+            print(f"resuming: {len(seen)} blogs already fetched", flush=True)
+    blogs = [b for b in blogs if b["key"] not in seen]
+
     print(f"fetching feeds for {len(blogs)} blogs with {workers} workers", flush=True)
 
     done = ok = 0
-    with open(out_path, "w") as out, ThreadPoolExecutor(max_workers=workers) as ex:
+    with open(out_path, "a") as out, ThreadPoolExecutor(max_workers=workers) as ex:
         futs = {ex.submit(handle, b): b for b in blogs}
         for fut in as_completed(futs):
             r = fut.result()

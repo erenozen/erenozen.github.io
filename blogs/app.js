@@ -17,6 +17,7 @@ const state = {
   topics: new Set(),
   kinds: new Set(),
   hideNews: true,
+  blog: -1,
   limit: PAGE,
   seq: 0,
   lastSeq: -1,
@@ -52,13 +53,24 @@ function onIndexReady() {
   const m = state.meta;
   $("#tagline").innerHTML =
     `<strong>${m.n_posts.toLocaleString()}</strong> posts from ` +
-    `<strong>${m.n_blogs.toLocaleString()}</strong> blogs, ranked by how Hacker News actually received them.`;
+    `<strong>${m.n_blogs.toLocaleString()}</strong> blogs, ranked by how Hacker News ` +
+    `actually received them. Newsroom and vendor posts are hidden by default.`;
   $("#stat-stories").textContent = m.n_stories_scanned.toLocaleString();
   $("#stat-built").textContent =
     "index built " + new Date(m.built * 1000).toISOString().slice(0, 10);
 
   buildChips($("#topics"), m.topics, state.topics, "topic");
   buildChips($("#kinds"), m.kinds, state.kinds, "kind");
+
+  document.querySelectorAll("#suggests button").forEach((b) => {
+    b.addEventListener("click", () => {
+      state.q = b.dataset.q;
+      $("#q").value = state.q;
+      state.limit = PAGE;
+      run(true);
+      $("#q").focus();
+    });
+  });
 
   const q = $("#q");
   q.disabled = false;
@@ -95,6 +107,7 @@ function filters() {
   return {
     topicMask,
     kindMask,
+    blogId: state.blog,
     hideNews: state.hideNews,
     hiddenSourceMask: state.meta ? state.meta.hidden_source_mask : 0,
   };
@@ -164,10 +177,13 @@ function render(m) {
   list.textContent = "";
   const status = $("#status");
   const anyFilter =
-    state.topics.size || state.kinds.size || !state.hideNews || state.q.trim();
+    state.topics.size || state.kinds.size || !state.hideNews ||
+    state.q.trim() || state.blog >= 0;
   $("#reset").hidden = !anyFilter;
 
   if (!m.rows.length) {
+    $("#suggests").hidden = !!state.q.trim() || state.blog >= 0;
+    renderPin();
     status.textContent = "";
     list.appendChild(noResults());
     $("#more").hidden = true;
@@ -183,6 +199,9 @@ function render(m) {
   status.innerHTML =
     `<span class="hl">${m.total.toLocaleString()}</span> ${state.mode === "blogs" ? "blogs" : "posts"}` +
     ` · ${ORDER[state.sort]} · ${m.ms.toFixed(1)}ms`;
+
+  $("#suggests").hidden = !!state.q.trim() || state.blog >= 0;
+  renderPin();
 
   const frag = document.createDocumentFragment();
   for (const r of m.rows) {
@@ -206,16 +225,46 @@ function postRow(r) {
   a.appendChild(t);
 
   const meta = el("div", "r-meta");
-  meta.appendChild(el("span", "r-blog", b.n));
-  meta.appendChild(el("span", "r-pts", "▲ " + r.p));
-  meta.appendChild(el("span", null, new Date(r.d).getUTCFullYear()));
+  const bits = [];
+  bits.push(el("span", "r-blog", b.n));
+
+  const pts = el("span", "r-pts", "▲ " + r.p);
+  pts.setAttribute("aria-label", `${r.p} points on Hacker News`);
+  bits.push(pts);
+
+  const year = new Date(r.d).getUTCFullYear();
+  const yr = el("span", "r-year", String(year));
+  yr.setAttribute("aria-label", `posted ${year}`);
+  bits.push(yr);
+
+  // Only label the kind when a title rule actually fired. Roughly three
+  // quarters of posts fall back to their publisher's default, and stamping
+  // "Release" on every one of those presents a guess as a fact -- it read as
+  // noise on almost every row.
   const kind = state.meta.kinds[r.k];
-  if (kind) meta.appendChild(el("span", "r-tag", kind.name));
+  if (kind && r.kr) bits.push(el("span", "r-tag", kind.name));
   const src = state.meta.sources[r.s];
-  if (src && src.hidden_by_default)
-    meta.appendChild(el("span", "r-tag", src.name));
+  if (src && src.hidden_by_default) bits.push(el("span", "r-tag", src.name));
+  if (r.dead) {
+    const d = el("span", "r-tag r-dead", "link may be dead");
+    d.title = "This URL did not respond when last checked";
+    bits.push(d);
+  }
+  bits.forEach((node, i) => {
+    if (i) meta.appendChild(el("span", "dot", " · "));
+    meta.appendChild(node);
+  });
   a.appendChild(meta);
   li.appendChild(a);
+
+  if (r.dead) {
+    const arc = el("a", "hn-link arc-link");
+    arc.href = "https://web.archive.org/web/" + a.href;
+    arc.target = "_blank";
+    arc.rel = "noopener noreferrer";
+    arc.textContent = "archived copy";
+    li.appendChild(arc);
+  }
 
   if (r.h) {
     const hn = el("a", "hn-link");
@@ -251,7 +300,53 @@ function blogRow(r) {
   }
   a.appendChild(meta);
   li.appendChild(a);
+
+  const open = el("button", "hn-link blog-open", `${r.c} posts →`);
+  open.title = `Show ${r.n}'s posts`;
+  open.addEventListener("click", () => pinBlog(r.i));
+  li.appendChild(open);
   return li;
+}
+
+function pinBlog(idx) {
+  state.blog = idx;
+  state.mode = "posts";
+  state.q = "";
+  $("#q").value = "";
+  state.limit = PAGE;
+  document.querySelectorAll(".mode-switch button").forEach((x) =>
+    x.classList.toggle("active", x.dataset.mode === "posts"),
+  );
+  run(true);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderPin() {
+  const host = $("#pin");
+  host.textContent = "";
+  if (state.blog < 0) {
+    host.hidden = true;
+    return;
+  }
+  const b = state.blogs[state.blog];
+  if (!b) {
+    host.hidden = true;
+    return;
+  }
+  host.hidden = false;
+  const name = el("a", "pin-name", b.n);
+  name.href = b.h;
+  name.target = "_blank";
+  name.rel = "noopener noreferrer";
+  host.appendChild(name);
+  if (b.o) host.appendChild(el("span", "pin-desc", b.o));
+  const clear = el("button", "pin-clear", "✕ all blogs");
+  clear.addEventListener("click", () => {
+    state.blog = -1;
+    state.limit = PAGE;
+    run(true);
+  });
+  host.appendChild(clear);
 }
 
 function noResults() {
@@ -361,6 +456,7 @@ $("#more").addEventListener("click", () => {
 $("#reset").addEventListener("click", () => {
   state.topics.clear();
   state.kinds.clear();
+  state.blog = -1;
   state.sort = "relevance";
   document.querySelectorAll(".sort-switch button").forEach((x) =>
     x.classList.toggle("active", x.dataset.sort === "relevance"),
@@ -384,6 +480,7 @@ function writeURL() {
   if (state.topics.size) p.set("t", [...state.topics].join(","));
   if (state.kinds.size) p.set("k", [...state.kinds].join(","));
   if (!state.hideNews) p.set("news", "1");
+  if (state.blog >= 0 && state.blogs[state.blog]) p.set("b", state.blogs[state.blog].n);
   const s = p.toString();
   history.replaceState(null, "", s ? "?" + s : location.pathname);
 }
@@ -417,6 +514,8 @@ function readURL() {
         }
       });
   };
+  const bkey = p.get("b");
+  state.blog = bkey ? state.blogs.findIndex((x) => x.n === bkey) : -1;
   apply("t", state.topics, $("#topics"));
   apply("k", state.kinds, $("#kinds"));
 }

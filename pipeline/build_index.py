@@ -64,6 +64,11 @@ FALLBACK_KIND = {
     "project": KIND_IDX["announcement"], "engineering": KIND_IDX["deep-dive"],
 }
 DAY0 = 1136073600  # 2006-01-01 UTC
+
+# topicMask uses bits 0-11 for the 12 topics; the top bits carry flags.
+TOPIC_BITS = 0x0FFF
+FLAG_KIND_RULE = 1 << 14   # a title rule actually fired (vs source fallback)
+FLAG_DEAD = 1 << 15        # URL failed a link check
 HIDDEN_MIN_POINTS = int(os.environ.get("HIDDEN_MIN_POINTS", "150"))
 
 
@@ -207,9 +212,11 @@ def main():
         day = max(0, min(int((s["created_at_i"] - DAY0) / 86400), 65535))
 
         kind = None
+        kind_flag = 0
         for ki, rx in KIND_RULES:
             if rx.search(title):
                 kind = ki
+                kind_flag = FLAG_KIND_RULE
                 break
         if kind is None:
             src_slug = keep[key]["source"]
@@ -227,7 +234,7 @@ def main():
         col_blog.append(blog_id[key])
         col_pts.append(pts)
         col_day.append(day)
-        col_tm.append(blog_topic_mask[key])
+        col_tm.append((blog_topic_mask[key] & TOPIC_BITS) | kind_flag)
         col_ks.append((blog_source[key] << 3) | kind)
         try:
             col_hn.append(int(s["objectID"]))
