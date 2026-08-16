@@ -195,7 +195,7 @@ function render(m) {
 
 function postRow(r) {
   const b = state.blogs[r.b] || { n: "?", h: "#" };
-  const li = el("li");
+  const li = el("li", "post-li");
   const a = el("a", "row");
   a.href = r.u ? b.h.replace(/\/$/, "") + r.u : b.h;
   a.target = "_blank";
@@ -215,8 +215,17 @@ function postRow(r) {
   if (src && src.hidden_by_default)
     meta.appendChild(el("span", "r-tag", src.name));
   a.appendChild(meta);
-
   li.appendChild(a);
+
+  if (r.h) {
+    const hn = el("a", "hn-link");
+    hn.href = "https://news.ycombinator.com/item?id=" + r.h;
+    hn.target = "_blank";
+    hn.rel = "noopener noreferrer";
+    hn.textContent = "HN discussion";
+    hn.title = "Read the Hacker News thread";
+    li.appendChild(hn);
+  }
   return li;
 }
 

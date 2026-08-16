@@ -40,7 +40,7 @@ def main():
     check(all(t.strip() for t in titles), "no empty titles")
 
     size = os.path.getsize(os.path.join(d, "posts.bin"))
-    check(size == n * 12, f"posts.bin is n*12 bytes ({size} vs {n*12})")
+    check(size == n * 16, f"posts.bin is n*16 bytes ({size} vs {n*16})")
 
     with open(os.path.join(d, "posts.bin"), "rb") as f:
         buf = f.read()
@@ -48,6 +48,7 @@ def main():
     pts = struct.unpack_from(f"<{n}H", buf, n * 4)
     tm = struct.unpack_from(f"<{n}H", buf, n * 8)
     ks = struct.unpack_from(f"<{n}B", buf, n * 10)
+    hn = struct.unpack_from(f"<{n}I", buf, n * 12)
 
     check(max(blog_ids) < nb, f"all blogId in range (max {max(blog_ids)} < {nb})")
     check(min(pts) >= 25, f"all posts clear the 25-point bar (min {min(pts)})")
@@ -56,6 +57,9 @@ def main():
     check(max(k & 7 for k in ks) < len(meta["kinds"]), "kind index in range")
     check(sum(1 for t in tm if t == 0) < n * 0.05,
           f"under 5% of posts have no topic ({sum(1 for t in tm if t==0)/n:.1%})")
+
+    check(sum(1 for h in hn if h == 0) < n * 0.01,
+          f"HN ids present ({sum(1 for h in hn if h==0)} missing)")
 
     names = {b["n"] for b in blogs}
     missing = [f for f in FAMOUS if f not in names]

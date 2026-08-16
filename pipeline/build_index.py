@@ -13,6 +13,7 @@ posts.bin (little-endian, n = meta.n_posts), in this exact order:
     topicMask  Uint16Array(n)   bit i set => topic i
     kindSource Uint8Array(n)    kind | source << 3
     score      Uint8Array(n)    baked rank, 0-255
+    hnId       Uint32Array(n)   HN objectID -> news.ycombinator.com/item?id=
 """
 import json, math, os, re, struct, sys, time
 from collections import defaultdict
@@ -170,6 +171,7 @@ def main():
 
     titles, paths = [], []
     col_blog, col_pts, col_day, col_tm, col_ks, col_score = [], [], [], [], [], []
+    col_hn = []
     now = time.time()
     n_scanned = 0
 
@@ -227,6 +229,10 @@ def main():
         col_day.append(day)
         col_tm.append(blog_topic_mask[key])
         col_ks.append((blog_source[key] << 3) | kind)
+        try:
+            col_hn.append(int(s["objectID"]))
+        except (KeyError, TypeError, ValueError):
+            col_hn.append(0)
 
     n = len(titles)
     print(f"posts indexed: {n:,} (from {n_scanned:,} deduped stories)")
@@ -242,6 +248,7 @@ def main():
         f.write(struct.pack(f"<{n}H", *col_tm))
         f.write(struct.pack(f"<{n}B", *col_ks))
         f.write(struct.pack(f"<{n}B", *col_score))
+        f.write(struct.pack(f"<{n}I", *col_hn))
     with open(os.path.join(outdir, "blogs.json"), "w") as f:
         json.dump(blogs_json, f, ensure_ascii=False, separators=(",", ":"))
     with open(os.path.join(outdir, "meta.json"), "w") as f:

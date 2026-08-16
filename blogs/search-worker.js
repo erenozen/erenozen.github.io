@@ -17,7 +17,7 @@ const uf = new uFuzzy({ intraMode: 1, intraIns: 1, interIns: Infinity });
 
 let titles = [];      // string[] -- the haystack
 let paths = [];       // string[] -- url path per post, parallel to titles
-let blogId, points, day, topicMask, kindSource, score; // typed arrays
+let blogId, points, day, topicMask, kindSource, score, hnId; // typed arrays
 let blogs = [];       // per-blog metadata
 let ready = false;
 
@@ -25,6 +25,7 @@ let ready = false;
 // affect the fuzzy set, so a prefix extension can always narrow from here.
 let lastQuery = "";
 let lastIdxs = null;
+let termHits = null;   // set when the OR fallback fired: idx -> terms matched
 
 const DAY0 = Date.UTC(2006, 0, 1) / 86400000;
 
@@ -55,7 +56,8 @@ async function load(base) {
   day = new Uint16Array(buf, o, n); o += n * 2;
   topicMask = new Uint16Array(buf, o, n); o += n * 2;
   kindSource = new Uint8Array(buf, o, n); o += n;
-  score = new Uint8Array(buf, o, n);
+  score = new Uint8Array(buf, o, n); o += n;
+  hnId = new Uint32Array(buf, o, n);
 
   ready = true;
   postMessage({ type: "ready", meta, nTitles: titles.length, blogs });
@@ -107,6 +109,7 @@ function emit(ordered, total) {
     d: (day[i] + DAY0) * 86400000,
     k: kindSource[i] & 7,
     s: kindSource[i] >> 3,
+    h: hnId[i],
   }));
   return { rows, total };
 }
@@ -118,8 +121,36 @@ function searchPosts(q, f, limit, sortMode) {
   } else {
     const extend = lastQuery && q.startsWith(lastQuery) && lastIdxs;
     idxs = uf.filter(titles, q, extend ? lastIdxs : undefined);
-    lastQuery = q;
-    lastIdxs = idxs;
+
+    // uFuzzy requires EVERY term to be present, so "sqlite internals" matched
+    // exactly one title even though hundreds are relevant. When the strict pass
+    // is that thin, union the per-term matches instead and rank by how many
+    // terms each title hit -- strict results still sort first because they hit
+    // all of them.
+    const terms = q.split(/\s+/).filter((t) => t.length > 2);
+    if (terms.length > 1 && (!idxs || idxs.length < 25)) {
+      const hits = new Map();
+      for (const i of idxs || []) hits.set(i, terms.length + 1);
+      for (const t of terms) {
+        const ti = uf.filter(titles, t);
+        if (!ti) continue;
+        for (const i of ti) hits.set(i, (hits.get(i) || 0) + 1);
+      }
+      // With 3+ terms, a single-term match is mostly noise ("how"/"works"
+      // match thousands of titles alone), so require at least two. With 2
+      // terms, requiring two would just be the strict pass we are relaxing.
+      const minHits = terms.length >= 3 ? 2 : 1;
+      idxs = [...hits.keys()]
+        .filter((i) => hits.get(i) >= minHits)
+        .sort((a, b) => (hits.get(b) - hits.get(a)) || (a - b));
+      termHits = hits;
+      lastQuery = "";       // this set is not a strict prefix match; do not narrow from it
+      lastIdxs = null;
+    } else {
+      termHits = null;
+      lastQuery = q;
+      lastIdxs = idxs;
+    }
     if (!idxs || !idxs.length) return { rows: [], total: 0 };
   }
 
@@ -171,6 +202,14 @@ function searchPosts(q, f, limit, sortMode) {
     // comparator, bucket by quality tier and rank by baked post score inside a
     // tier: best matches first, and popular posts first among equally good
     // matches. An exact-ish match can never be buried by a merely popular one.
+    if (termHits) {
+      // Fallback path: rank by terms matched, then by baked score. info()/sort()
+      // would re-impose the all-terms ordering we just relaxed.
+      ordered = cand
+        .sort((a, b) => (termHits.get(b) - termHits.get(a)) || (score[b] - score[a]))
+        .slice(0, limit);
+      return emit(ordered, total);
+    }
     const info = uf.info(cand, titles, q);
     const order = uf.sort(info, titles, q);
     const rank = new Map();

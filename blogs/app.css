@@ -356,6 +356,45 @@ body {
     color: var(--desc-text);
 }
 
+/* HN thread link -- sits beside the row, not inside it, so the row's own link
+   still covers the whole article target. */
+.results li.post-li {
+    position: relative;
+}
+
+.hn-link {
+    position: absolute;
+    right: 0.55rem;
+    bottom: 0.55rem;
+    font-size: 0.72rem;
+    color: var(--secondary-text);
+    text-decoration: none;
+    border: 1px solid var(--chip-border);
+    border-radius: 999px;
+    padding: 0 0.5rem;
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.results li:hover .hn-link,
+.results li.sel .hn-link,
+.hn-link:focus-visible {
+    opacity: 1;
+}
+
+.hn-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* Touch devices have no hover, so never hide it there. */
+@media (hover: none) {
+    .hn-link {
+        opacity: 1;
+    }
+}
+
 /* --- Empty / no-results --- */
 .empty {
     padding: 1.2rem 0;
