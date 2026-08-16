@@ -68,10 +68,28 @@ jobs:
             work/candidates.jsonl pipeline/classified work/feed_targets.jsonl
           python pipeline/fetch_feeds.py work/feed_targets.jsonl work/feeds.jsonl 16
 
+      # A classification agent that reads the wrong evidence file produces
+      # perfectly valid-looking output while silently dropping a whole batch.
+      # Catch that before it reaches the index.
+      - name: Validate committed classifications
+        run: |
+          python - <<'EOF'
+          import json
+          rows = [json.loads(l) for l in open("work/candidates.jsonl")]
+          with open("work/expected.jsonl", "w") as f:
+              for r in rows:
+                  if r["n_stories"] >= 3:
+                      f.write(json.dumps({"key": r["key"]}) + "\n")
+          EOF
+          python pipeline/validate_classifications.py \
+            work/expected.jsonl pipeline/classified || \
+            echo "::warning::classification coverage is incomplete; index will omit blogs"
+
       - name: Build search index
         run: |
           python pipeline/build_index.py \
-            work/hn_dedup.jsonl work/candidates.jsonl pipeline/classified blogs/data
+            work/hn_dedup.jsonl work/candidates.jsonl pipeline/classified \
+            blogs/data work/feeds.jsonl
 
       - name: Sanity-check the built index
         run: python pipeline/check_index.py blogs/data
