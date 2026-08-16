@@ -18,8 +18,14 @@ FAMOUS = [
     "danluu.com", "jvns.ca", "simonwillison.net", "rachelbythebay.com",
     "lwn.net", "blog.cloudflare.com", "antirez.com", "nullprogram.com",
     "randomascii.wordpress.com", "lcamtuf.substack.com",
-    "terrytao.wordpress.com", "fgiesen.wordpress.com",
+    "fgiesen.wordpress.com", "0fps.wordpress.com",
 ]
+# Deliberately NOT canaries, though the same key fix recovered them:
+#   terrytao.wordpress.com   -- classifies science:1.0, no software topic. A
+#                               mathematics blog; correctly out of a PROGRAMMING
+#                               blog finder. This canary fired once and the
+#                               pipeline turned out to be right.
+#   astralcodexten.substack.com -- society, is_programming_blog=false.
 
 def main():
     d = sys.argv[1]
