@@ -13,6 +13,7 @@ const PAGE = 40;
 const state = {
   q: "",
   mode: "posts",
+  sort: "relevance",
   topics: new Set(),
   kinds: new Set(),
   hideNews: true,
@@ -109,6 +110,7 @@ function run(immediate) {
       q: state.q.trim(),
       mode: state.mode,
       filters: filters(),
+      sort: state.sort,
       limit: state.limit,
     });
     writeURL();
@@ -172,9 +174,15 @@ function render(m) {
     return;
   }
 
+  const ORDER = {
+    relevance: state.q.trim() ? "best match" : "top ranked",
+    points: "most upvoted",
+    date: "newest first",
+    oldest: "oldest first",
+  };
   status.innerHTML =
     `<span class="hl">${m.total.toLocaleString()}</span> ${state.mode === "blogs" ? "blogs" : "posts"}` +
-    ` · ${m.ms.toFixed(1)}ms`;
+    ` · ${ORDER[state.sort]} · ${m.ms.toFixed(1)}ms`;
 
   const frag = document.createDocumentFragment();
   for (const r of m.rows) {
@@ -318,6 +326,18 @@ document.querySelectorAll(".mode-switch button").forEach((b) => {
   });
 });
 
+document.querySelectorAll(".sort-switch button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document
+      .querySelectorAll(".sort-switch button")
+      .forEach((x) => x.classList.remove("active"));
+    b.classList.add("active");
+    state.sort = b.dataset.sort;
+    state.limit = PAGE;
+    run(true);
+  });
+});
+
 $("#hide-news").addEventListener("change", (e) => {
   state.hideNews = e.target.checked;
   state.limit = PAGE;
@@ -332,6 +352,10 @@ $("#more").addEventListener("click", () => {
 $("#reset").addEventListener("click", () => {
   state.topics.clear();
   state.kinds.clear();
+  state.sort = "relevance";
+  document.querySelectorAll(".sort-switch button").forEach((x) =>
+    x.classList.toggle("active", x.dataset.sort === "relevance"),
+  );
   state.hideNews = true;
   state.q = "";
   $("#q").value = "";
@@ -347,6 +371,7 @@ function writeURL() {
   const p = new URLSearchParams();
   if (state.q.trim()) p.set("q", state.q.trim());
   if (state.mode !== "posts") p.set("mode", state.mode);
+  if (state.sort !== "relevance") p.set("sort", state.sort);
   if (state.topics.size) p.set("t", [...state.topics].join(","));
   if (state.kinds.size) p.set("k", [...state.kinds].join(","));
   if (!state.hideNews) p.set("news", "1");
@@ -358,6 +383,13 @@ function readURL() {
   const p = new URLSearchParams(location.search);
   state.q = p.get("q") || "";
   state.mode = p.get("mode") === "blogs" ? "blogs" : "posts";
+  const sortParam = p.get("sort");
+  state.sort = ["points", "date", "oldest"].includes(sortParam)
+    ? sortParam
+    : "relevance";
+  document.querySelectorAll(".sort-switch button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.sort === state.sort);
+  });
   state.hideNews = p.get("news") !== "1";
   $("#hide-news").checked = state.hideNews;
   document.querySelectorAll(".mode-switch button").forEach((b) => {

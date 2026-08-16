@@ -61,6 +61,34 @@ async function load(base) {
   postMessage({ type: "ready", meta, nTitles: titles.length, blogs });
 }
 
+/* Top-N by key without sorting the whole pool.
+ *
+ * Browse mode ("newest", no query) has a pool of every post in the corpus.
+ * pool.sort(cmp).slice(0, limit) on 111k rows costs tens of ms for 40 visible
+ * results. This keeps a sorted buffer of `limit` items and binary-inserts only
+ * the rare candidate that beats the running threshold, so the common case is
+ * one comparison per row. */
+function topN(pool, key, limit) {
+  if (pool.length <= limit) return pool.slice().sort((a, b) => key(b) - key(a));
+  const best = [];
+  let thresh = -Infinity;
+  for (let k = 0; k < pool.length; k++) {
+    const i = pool[k];
+    const v = key(i);
+    if (best.length === limit && v <= thresh) continue;
+    let lo = 0, hi = best.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (key(best[mid]) >= v) lo = mid + 1;
+      else hi = mid;
+    }
+    best.splice(lo, 0, i);
+    if (best.length > limit) best.pop();
+    if (best.length === limit) thresh = key(best[limit - 1]);
+  }
+  return best;
+}
+
 function passes(i, f) {
   if (f.topicMask && !(topicMask[i] & f.topicMask)) return false;
   const ks = kindSource[i];
@@ -69,7 +97,21 @@ function passes(i, f) {
   return true;
 }
 
-function searchPosts(q, f, limit) {
+function emit(ordered, total) {
+  const rows = ordered.map((i) => ({
+    i,
+    t: titles[i],
+    b: blogId[i],
+    p: points[i],
+    u: paths[i] || "",
+    d: (day[i] + DAY0) * 86400000,
+    k: kindSource[i] & 7,
+    s: kindSource[i] >> 3,
+  }));
+  return { rows, total };
+}
+
+function searchPosts(q, f, limit, sortMode) {
   let idxs;
   if (!q) {
     idxs = null; // browse mode -- rank everything by baked score
@@ -97,9 +139,22 @@ function searchPosts(q, f, limit) {
   const total = pool.length;
   if (!total) return { rows: [], total: 0 };
 
+  // Explicit sorts bypass relevance ranking entirely: if you asked for "most
+  // upvoted", match quality must not reorder the answer. uFuzzy already decided
+  // membership; sort only decides order.
+  if (sortMode === "points") {
+    return emit(topN(pool, (i) => points[i], limit), total);
+  }
+  if (sortMode === "date") {
+    return emit(topN(pool, (i) => day[i], limit), total);
+  }
+  if (sortMode === "oldest") {
+    return emit(topN(pool, (i) => -day[i], limit), total);
+  }
+
   let ordered;
   if (!q) {
-    ordered = pool.sort((a, b) => score[b] - score[a]).slice(0, limit);
+    ordered = topN(pool, (i) => score[i], limit);
   } else {
     // info()/sort() cost scales with the match set, and a one-letter query
     // matches most of the corpus. Bound it: keep the highest-scoring INFO_CAP
@@ -132,20 +187,10 @@ function searchPosts(q, f, limit) {
       .slice(0, limit);
   }
 
-  const rows = ordered.map((i) => ({
-    i,
-    t: titles[i],
-    b: blogId[i],
-    p: points[i],
-    u: paths[i] || "",
-    d: (day[i] + DAY0) * 86400000,
-    k: kindSource[i] & 7,
-    s: kindSource[i] >> 3,
-  }));
-  return { rows, total };
+  return emit(ordered, total);
 }
 
-function searchBlogs(q, f, limit) {
+function searchBlogs(q, f, limit, sortMode) {
   let pool = [];
   for (let i = 0; i < blogs.length; i++) {
     const b = blogs[i];
@@ -160,9 +205,13 @@ function searchBlogs(q, f, limit) {
     const info = uf.info(idxs, hay, q);
     const order = uf.sort(info, hay, q);
     pool = order.map((r) => pool[info.idx[r]]);
-  } else {
-    pool.sort((a, b) => blogs[b].q - blogs[a].q);
   }
+  // For blogs, "upvotes" means the blog's median HN score and "newest" means
+  // most recently seen on HN -- the nearest honest equivalents.
+  if (sortMode === "points") pool = topN(pool, (i) => blogs[i].m, limit);
+  else if (sortMode === "date") pool = topN(pool, (i) => blogs[i].l, limit);
+  else if (sortMode === "oldest") pool = topN(pool, (i) => -blogs[i].l, limit);
+  else if (!q) pool = topN(pool, (i) => blogs[i].q, limit);
   return {
     rows: pool.slice(0, limit).map((i) => ({ i, ...blogs[i] })),
     total: pool.length,
@@ -177,8 +226,8 @@ onmessage = (e) => {
     const t0 = performance.now();
     const r =
       m.mode === "blogs"
-        ? searchBlogs(m.q, m.filters, m.limit)
-        : searchPosts(m.q, m.filters, m.limit);
+        ? searchBlogs(m.q, m.filters, m.limit, m.sort)
+        : searchPosts(m.q, m.filters, m.limit, m.sort);
     postMessage({
       type: "results",
       seq: m.seq,

@@ -159,6 +159,7 @@ def main():
             "n": k, "h": st["home"], "s": SOURCE_IDX[c["source"]], "tm": tm,
             "o": (c.get("one_line") or "")[:110],
             "c": st["n_stories"], "m": st["median_points"],
+            "l": time.gmtime(st["last_seen"]).tm_year,
             "q": round(blog_quality(st["median_points"], st["n_stories"]), 3),
         })
 

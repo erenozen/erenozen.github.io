@@ -56,6 +56,14 @@
             <div class="filters">
                 <div class="filter-row" id="topics" aria-label="Filter by topic"></div>
                 <div class="filter-row secondary">
+                    <span class="sort-label">Sort</span>
+                    <div class="sort-switch" role="group" aria-label="Sort order">
+                        <button data-sort="relevance" class="active">Best</button>
+                        <button data-sort="points">Most upvoted</button>
+                        <button data-sort="date">Newest</button>
+                        <button data-sort="oldest">Oldest</button>
+                    </div>
+                    <span class="sep">·</span>
                     <label class="toggle">
                         <input type="checkbox" id="hide-news" checked />
                         <span>Hide newsrooms &amp; vendor posts</span>

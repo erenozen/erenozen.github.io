@@ -239,6 +239,45 @@ body {
     text-decoration: underline;
 }
 
+/* Sort control */
+.sort-label {
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+}
+
+.sort-switch {
+    display: inline-flex;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.sort-switch button {
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--desc-text);
+    background: transparent;
+    border: 0;
+    padding: 0.16rem 0.62rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.sort-switch button + button {
+    border-left: 1px solid var(--chip-border);
+}
+
+.sort-switch button.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+}
+
 /* --- Status --- */
 .status {
     margin: 0.9rem 0 0.3rem;
