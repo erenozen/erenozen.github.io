@@ -1,0 +1,89 @@
+name: Refresh blog index
+
+# The index is a build artifact of two sources: Hacker News (via Algolia) and
+# the blogs' own feeds. Both drift, so this rebuilds them on a schedule.
+#
+# What this job does NOT do is classify blogs. Assigning source/topic/kind is an
+# LLM step run out-of-band (see pipeline/README.md); its output is committed to
+# pipeline/classified/ and treated as an input here. A newly discovered blog is
+# therefore absent from the index until the next classification pass -- which is
+# the correct failure mode, because an unclassified blog has no `source`, and
+# `source` is what decides whether it is hidden behind the newsroom toggle.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 1 * *" # 04:17 UTC on the 1st of each month
+
+permissions:
+  contents: write
+
+concurrency:
+  group: blog-index
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      # A full pull is ~510 requests and ~15 min. Cached between runs so a
+      # re-run on the same day is cheap; the cache is advisory, never required.
+      - name: Restore HN corpus cache
+        uses: actions/cache@v4
+        with:
+          path: work/hn_stories.jsonl
+          key: hn-corpus-${{ github.run_id }}
+          restore-keys: hn-corpus-
+
+      - name: Pull Hacker News stories
+        env:
+          THRESHOLD: "25"
+          OUT: work/hn_stories.jsonl
+          # With a restored cache only the new head is missing; walking back to
+          # 2006 every month would be ~500 pointless requests.
+          STOP_AFTER_SEEN: "3"
+        run: |
+          mkdir -p work
+          python pipeline/pull_hn.py
+
+      - name: Deduplicate
+        run: python pipeline/dedupe.py work/hn_stories.jsonl work/hn_dedup.jsonl
+
+      - name: Aggregate into candidate blogs
+        run: python pipeline/aggregate_domains.py work/hn_stories.jsonl work/candidates.jsonl 3
+
+      - name: Fetch feeds for classified blogs
+        run: |
+          python pipeline/select_for_feeds.py \
+            work/candidates.jsonl pipeline/classified work/feed_targets.jsonl
+          python pipeline/fetch_feeds.py work/feed_targets.jsonl work/feeds.jsonl 16
+
+      - name: Build search index
+        run: |
+          python pipeline/build_index.py \
+            work/hn_dedup.jsonl work/candidates.jsonl pipeline/classified blogs/data
+
+      - name: Sanity-check the built index
+        run: python pipeline/check_index.py blogs/data
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add blogs/data
+          if git diff --cached --quiet; then
+            echo "index unchanged; nothing to commit"
+          else
+            git commit -m "Refresh blog index ($(date -u +%Y-%m-%d))"
+            git push
+          fi

@@ -1,0 +1,442 @@
+/* Shares the portfolio's design tokens so the finder reads as the same site. */
+:root {
+    --bg: #f9e6d3;
+    --fg: #222;
+    --accent: #ef7e5c;
+    --max-w: 820px;
+    --sp: 1rem;
+    --secondary-text: #555;
+    --desc-text: #444;
+    --chip-bg: rgba(255, 255, 255, 0.55);
+    --chip-border: rgba(0, 0, 0, 0.12);
+    --rule: rgba(0, 0, 0, 0.1);
+    --hover: rgba(239, 126, 92, 0.09);
+}
+
+[data-theme="dark"] {
+    --bg: #282828;
+    --fg: #ebdbb2;
+    --accent: #fb4934;
+    --secondary-text: #a89984;
+    --desc-text: #bdae93;
+    --chip-bg: rgba(60, 56, 54, 0.6);
+    --chip-border: rgba(255, 255, 255, 0.13);
+    --rule: rgba(255, 255, 255, 0.1);
+    --hover: rgba(251, 73, 52, 0.12);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Space Grotesk", sans-serif;
+    line-height: 1.6;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Hero --- */
+.finder-hero {
+    max-width: var(--max-w);
+    margin: var(--sp) auto 0;
+    padding: 0 var(--sp);
+    width: 100%;
+}
+
+.hero-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.finder-hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.terminal-prefix {
+    font-family: "Ubuntu Mono", monospace;
+    font-weight: 400;
+    font-size: 1.7rem;
+    color: var(--accent);
+    margin-right: 0.35rem;
+}
+
+.back-link {
+    color: var(--secondary-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+.back-link:hover {
+    color: var(--accent);
+}
+
+.tagline {
+    color: var(--secondary-text);
+    font-style: italic;
+    margin-top: 0.35rem;
+    font-weight: 400;
+    letter-spacing: -0.2px;
+    font-size: 0.95rem;
+}
+
+/* --- Layout --- */
+.finder {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: var(--sp);
+    flex: 1;
+    width: 100%;
+}
+
+/* --- Search --- */
+.search-wrap {
+    display: flex;
+    gap: 0.6rem;
+    align-items: stretch;
+    margin-top: 0.4rem;
+}
+
+#q {
+    flex: 1;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--fg);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    min-width: 0;
+}
+#q::placeholder {
+    color: var(--secondary-text);
+    opacity: 0.75;
+}
+#q:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--hover);
+}
+#q:disabled {
+    opacity: 0.6;
+}
+
+.mode-switch {
+    display: flex;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.mode-switch button {
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--secondary-text);
+    background: transparent;
+    border: 0;
+    padding: 0 0.9rem;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+.mode-switch button.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* --- Filters --- */
+.filters {
+    margin-top: 0.75rem;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+.filter-row.secondary {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+}
+.filter-row.inline {
+    display: inline-flex;
+}
+.spacer {
+    flex: 1;
+}
+
+.chip {
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--desc-text);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 999px;
+    padding: 0.18rem 0.62rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+}
+.chip:hover {
+    border-color: var(--accent);
+}
+.chip[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 500;
+}
+.chip .count {
+    opacity: 0.6;
+    font-size: 0.75rem;
+    margin-left: 0.28rem;
+}
+
+.toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    user-select: none;
+}
+.toggle input {
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+.sep {
+    opacity: 0.4;
+}
+
+.reset {
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: var(--accent);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* --- Status --- */
+.status {
+    margin: 0.9rem 0 0.3rem;
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+    font-family: "Ubuntu Mono", monospace;
+    min-height: 1.4em;
+}
+.status .hl {
+    color: var(--accent);
+}
+
+/* --- Results --- */
+.results {
+    list-style: none;
+}
+
+.results li {
+    border-bottom: 1px solid var(--rule);
+}
+
+.results a.row {
+    display: block;
+    padding: 0.6rem 0.55rem;
+    text-decoration: none;
+    color: inherit;
+    border-left: 3px solid transparent;
+    transition:
+        background 0.13s ease,
+        border-color 0.13s ease,
+        padding-left 0.13s ease;
+}
+.results a.row:hover,
+.results li.sel a.row {
+    background: var(--hover);
+    border-left-color: var(--accent);
+    padding-left: 0.8rem;
+}
+
+.r-title {
+    font-weight: 500;
+    letter-spacing: -0.2px;
+    line-height: 1.35;
+}
+.r-title mark {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.r-meta {
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: var(--secondary-text);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+.r-blog {
+    font-weight: 500;
+    color: var(--desc-text);
+}
+.r-pts {
+    font-family: "Ubuntu Mono", monospace;
+}
+.r-tag {
+    border: 1px solid var(--chip-border);
+    border-radius: 999px;
+    padding: 0 0.45rem;
+    font-size: 0.72rem;
+}
+.r-desc {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--desc-text);
+}
+
+/* --- Empty / no-results --- */
+.empty {
+    padding: 1.2rem 0;
+    color: var(--secondary-text);
+}
+.empty h3 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--fg);
+    margin-bottom: 0.35rem;
+}
+.empty ul {
+    margin: 0.4rem 0 0 1.1rem;
+    font-size: 0.88rem;
+}
+.empty code {
+    font-family: "Ubuntu Mono", monospace;
+    color: var(--accent);
+}
+
+.more-wrap {
+    text-align: center;
+    margin: 1rem 0;
+}
+.more {
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 8px;
+    padding: 0.45rem 1.1rem;
+    cursor: pointer;
+}
+.more:hover {
+    border-color: var(--accent);
+}
+
+/* --- Footer --- */
+.finder-footer {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 1rem var(--sp) 2.5rem;
+    font-size: 0.8rem;
+    color: var(--secondary-text);
+    border-top: 1px solid var(--rule);
+    width: 100%;
+}
+.finder-footer p + p {
+    margin-top: 0.4rem;
+}
+.finder-footer a {
+    color: var(--accent);
+    text-decoration: none;
+}
+.finder-footer a:hover {
+    text-decoration: underline;
+}
+.muted {
+    opacity: 0.8;
+}
+
+/* --- Theme toggle (matches portfolio) --- */
+.theme-toggle {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    width: 42px;
+    height: 42px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    transition:
+        transform 0.3s ease,
+        background-color 0.3s ease;
+}
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+.theme-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (max-width: 560px) {
+    .search-wrap {
+        flex-direction: column;
+    }
+    .mode-switch button {
+        flex: 1;
+        padding: 0.4rem 0;
+    }
+    .finder-hero h1 {
+        font-size: 1.6rem;
+    }
+    .theme-toggle {
+        bottom: 12px;
+        right: 12px;
+        width: 38px;
+        height: 38px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}

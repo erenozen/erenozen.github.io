@@ -322,6 +322,32 @@ h2::after {
     color: var(--secondary-text);
 }
 
+/* Blog Finder call-to-action */
+.finder-cta {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.finder-cta a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+.finder-cta a:hover {
+    text-decoration: underline;
+}
+
+.finder-cta-note {
+    font-size: 0.82rem;
+    color: var(--secondary-text);
+}
+
+
 /* ---  Bottom Footer --- */
 .site-footer {
     text-align: center;

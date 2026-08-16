@@ -1,0 +1,54 @@
+{
+  "_comment": [
+    "Hand corrections applied AFTER classification, keyed by blog key.",
+    "Every entry here was found by auditing the classifier's output against",
+    "sibling domains it labelled differently. The source field is the one that",
+    "matters most: it decides whether a blog is hidden behind the newsroom",
+    "toggle, and it is inherited by every post the blog published."
+  ],
+
+  "source": {
+    "sciencedaily.com": "institution",
+    "eurekalert.org": "institution",
+    "phys.org": "institution",
+    "medicalxpress.com": "institution",
+    "techxplore.com": "institution",
+
+    "theregister.com": "trade",
+    "tomshardware.com": "trade",
+    "theinformation.com": "trade",
+    "anandtech.com": "trade",
+    "arstechnica.com": "newsroom",
+
+    "developer.apple.com": "vendor",
+    "apple.com": "vendor"
+  },
+
+  "_deny_comment": [
+    "Hosting, social and paste domains the classifier labelled as blogs rather",
+    "than skipping. plus.google.com alone carried 437 stories from many unrelated",
+    "authors, which is the buttondown.email failure in a different costume."
+  ],
+  "deny": [
+    "plus.google.com",
+    "sites.google.com",
+    "docs.google.com",
+    "groups.google.com",
+    "pastebin.com",
+    "gist.github.com",
+    "marc.info",
+    "bugzilla.mozilla.org",
+    "bugs.chromium.org",
+    "issues.apache.org",
+    "archive.ph",
+    "archive.is",
+    "12ft.io",
+    "outline.com",
+    "public.tableau.com",
+    "chromewebstore.google.com",
+    "addons.mozilla.org",
+    "media.ccc.de",
+    "youtube.com",
+    "ycombinator.com"
+  ]
+}
