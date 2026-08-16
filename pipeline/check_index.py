@@ -51,7 +51,14 @@ def main():
     hn = struct.unpack_from(f"<{n}I", buf, n * 12)
 
     check(max(blog_ids) < nb, f"all blogId in range (max {max(blog_ids)} < {nb})")
-    check(min(pts) >= 25, f"all posts clear the 25-point bar (min {min(pts)})")
+    # Feed-sourced posts carry no HN score, so the bar applies to HN posts only.
+    hn_pts = [p for p, t in zip(pts, tm) if not (t & (1 << 13))]
+    check(min(hn_pts) >= 25,
+          f"all HN posts clear the 25-point bar (min {min(hn_pts)})")
+    n_feed = sum(1 for t in tm if t & (1 << 13))
+    check(n_feed > 0, f"feed posts present ({n_feed:,})")
+    check(all(p == 0 for p, t in zip(pts, tm) if t & (1 << 13)),
+          "feed posts carry no fabricated HN score")
     check(max((t & 0x0FFF).bit_length() for t in tm) <= 12, "topic mask within 12 topics")
     n_rule = sum(1 for t in tm if t & (1 << 14))
     check(0.10 < n_rule / n < 0.60,
@@ -61,8 +68,8 @@ def main():
     check(sum(1 for t in tm if (t & 0x0FFF) == 0) < n * 0.05,
           f"under 5% of posts have no topic ({sum(1 for t in tm if (t&0x0FFF)==0)/n:.1%})")
 
-    check(sum(1 for h in hn if h == 0) < n * 0.01,
-          f"HN ids present ({sum(1 for h in hn if h==0)} missing)")
+    missing_hn = sum(1 for h, t in zip(hn, tm) if h == 0 and not (t & (1 << 13)))
+    check(missing_hn < n * 0.01, f"HN ids present on HN posts ({missing_hn} missing)")
 
     names = {b["n"] for b in blogs}
     missing = [f for f in FAMOUS if f not in names]

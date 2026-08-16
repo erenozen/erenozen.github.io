@@ -68,7 +68,27 @@ DAY0 = 1136073600  # 2006-01-01 UTC
 # topicMask uses bits 0-11 for the 12 topics; the top bits carry flags.
 TOPIC_BITS = 0x0FFF
 FLAG_KIND_RULE = 1 << 14   # a title rule actually fired (vs source fallback)
+FLAG_FEED = 1 << 13        # came from the blog's own feed, not from HN
 FLAG_DEAD = 1 << 15        # URL failed a link check
+FEED_CAP = int(os.environ.get("FEED_CAP", "12"))  # most-recent entries per blog
+
+# Forum feeds emit one entry per thread, which drowns real posts in the Newest
+# view (spacebattles was posting "Yu-Gi-Oh! GX: World Tour"). Their HN-surfaced
+# stories are kept -- those cleared 25 points and are genuinely interesting --
+# but the raw firehose is not indexed.
+FORUM_HOST = re.compile(
+    r"^(forums?|discuss|community|board|talk|answers|support)\.|"
+    r"\.(forums?|discourse)\.|phpbb|vbulletin|lists\.", re.I)
+
+# Hostname patterns miss vogons.org (a forum) and fossil-scm.org (a commit log).
+# Two content signals catch those generically:
+#   - a reply prefix is a forum thread, never an article
+#   - twelve entries inside a week is a firehose, not a blog's publishing rate
+# vogons.org prefixes its category: "Video • Re: Radeon X700 ...", so the reply
+# marker is not anchored at the start. fossil-scm.org tags commits "(tags: trunk)".
+REPLY_TITLE = re.compile(
+    r"(^|[•·|»–—-]\s*)(re|aw|fwd)\s*[:：]|\(tags?:\s*[\w./-]+\)", re.I)
+FIREHOSE_WINDOW_DAYS = 7
 HIDDEN_MIN_POINTS = int(os.environ.get("HIDDEN_MIN_POINTS", "150"))
 
 
@@ -81,6 +101,7 @@ def blog_quality(median, n):
 
 def main():
     dedup, cand_path, cls_dir, outdir = sys.argv[1:5]
+    feeds_path = sys.argv[5] if len(sys.argv) > 5 else None
     os.makedirs(outdir, exist_ok=True)
 
     cands = {json.loads(l)["key"]: json.loads(l) for l in open(cand_path)}
@@ -129,8 +150,12 @@ def main():
         topics = {t.get("slug") for t in c.get("topics", [])}
         technical = bool(topics & SOFTWARE)
 
-        if src in ("engineering", "project", "trade"):
-            keep[key] = c                      # inherently technical publishers
+        # Treating these sources as "inherently technical" and skipping the
+        # is_programming_blog check let forums.spacebattles.com in -- a sci-fi
+        # fan forum the classifier labelled project/prog=False at confidence
+        # 0.4. Trust the flag: it is right 92-99% of the time for these sources.
+        if src in ("engineering", "project", "trade") and c.get("is_programming_blog"):
+            keep[key] = c
         elif src in ("personal", "vendor") and c.get("is_programming_blog") and technical:
             keep[key] = c
         elif src == "newsroom" and cands[key]["n_stories"] >= 20:
@@ -241,8 +266,111 @@ def main():
         except (KeyError, TypeError, ValueError):
             col_hn.append(0)
 
+    n_hn = len(titles)
+    print(f"HN posts indexed: {n_hn:,} (from {n_scanned:,} deduped stories)")
+
+    # ---- feed-sourced posts ----
+    #
+    # HN only ever surfaces the posts that went viral; measured, 86% of feed
+    # entries are absent from the HN index entirely. These carry no score, so
+    # they rank below HN posts by default but are findable by search and make
+    # "Newest" reflect what good blogs actually published rather than only what
+    # reached the front page.
+    if feeds_path and os.path.exists(feeds_path):
+        from dedupe import canonical_url
+        have = set()
+        for i in range(n_hn):
+            have.add(canonical_url(blogs_json[col_blog[i]]["h"].rstrip("/") + paths[i]))
+
+        n_feed = skipped_date = skipped_forum = firehose = 0
+        for line in open(feeds_path):
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            key = r.get("key")
+            if key not in blog_id or not r.get("entries"):
+                continue
+            if FORUM_HOST.search(key.split("/")[0]):
+                skipped_forum += 1
+                continue
+            ents = []
+            for e in r["entries"]:
+                ts = e.get("published")
+                # No date, or a date outside HN's lifetime, would sort as 2006
+                # and poison the Oldest view. 2.5% of entries; drop them.
+                if not ts or ts < DAY0 or ts > now + 172800:
+                    skipped_date += 1
+                    continue
+                ents.append((ts, e))
+            ents.sort(key=lambda x: -x[0])
+
+            # Cadence guard: if the most recent FEED_CAP entries all landed
+            # inside a week, this feed is a commit log, forum or status page
+            # rather than a blog. Take a token 2 so the blog still shows some
+            # recency without owning the Newest view.
+            cap = FEED_CAP
+            if len(ents) >= FEED_CAP:
+                span_days = (ents[0][0] - ents[FEED_CAP - 1][0]) / 86400.0
+                if span_days < FIREHOSE_WINDOW_DAYS:
+                    # Skip outright rather than admitting a token 2: a commit
+                    # log contributes nothing a reader wants, and these blogs
+                    # keep all of their upvote-vetted HN posts regardless.
+                    cap = 0
+                    firehose += 1
+
+            taken = 0
+            for ts, e in ents:
+                if taken >= cap:
+                    break
+                title = (e.get("title") or "").replace("\n", " ").strip()
+                if not title or REPLY_TITLE.search(title):   # search, not match: the
+                    # commit marker "(tags: trunk)" sits at the END of the title
+                    continue
+                cu = canonical_url(e["url"])
+                if not cu or cu in have:
+                    continue
+                try:
+                    pu = urlparse(e["url"])
+                except ValueError:
+                    continue
+                path = (pu.path or "/") + (("?" + pu.query) if pu.query else "")
+                path = path.replace("\n", "").replace("\r", "")
+                have.add(cu)
+                taken += 1
+
+                kind, kind_flag = None, 0
+                for ki, rx in KIND_RULES:
+                    if rx.search(title):
+                        kind, kind_flag = ki, FLAG_KIND_RULE
+                        break
+                if kind is None:
+                    src_slug = keep[key]["source"]
+                    kind = FALLBACK_KIND.get(src_slug)
+                    if kind is None:
+                        kind = KIND_IDX.get(keep[key].get("kind"), KIND_IDX["deep-dive"])
+
+                age_yr = (now - ts) / 31_557_600
+                recency = 1.0 / (1.0 + age_yr / 6.0)
+                # No HN score exists, so rank on recency alone and cap below the
+                # HN band -- an unvetted post must not outrank a 500-point one.
+                titles.append(title)
+                paths.append(path)
+                col_blog.append(blog_id[key])
+                col_pts.append(0)
+                col_day.append(max(0, min(int((ts - DAY0) / 86400), 65535)))
+                col_tm.append((blog_topic_mask[key] & TOPIC_BITS) | kind_flag | FLAG_FEED)
+                col_ks.append((blog_source[key] << 3) | kind)
+                col_score.append(max(0, min(120, int(120 * recency))))
+                col_hn.append(0)
+                n_feed += 1
+        print(f"feed posts added : {n_feed:,} (cap {FEED_CAP}/blog, "
+              f"{skipped_date:,} skipped for unusable dates, "
+              f"{skipped_forum} forum feeds skipped, "
+              f"{firehose} firehose feeds throttled)")
+
     n = len(titles)
-    print(f"posts indexed: {n:,} (from {n_scanned:,} deduped stories)")
+    print(f"posts indexed: {n:,}")
 
     with open(os.path.join(outdir, "titles.txt"), "w") as f:
         f.write("\n".join(titles))

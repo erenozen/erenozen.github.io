@@ -6,28 +6,25 @@
     "matters most: it decides whether a blog is hidden behind the newsroom",
     "toggle, and it is inherited by every post the blog published."
   ],
-
   "source": {
     "sciencedaily.com": "institution",
     "eurekalert.org": "institution",
     "phys.org": "institution",
     "medicalxpress.com": "institution",
     "techxplore.com": "institution",
-
     "theregister.com": "trade",
     "tomshardware.com": "trade",
     "theinformation.com": "trade",
     "anandtech.com": "trade",
     "arstechnica.com": "newsroom",
-
     "developer.apple.com": "vendor",
     "apple.com": "vendor"
   },
-
   "_deny_comment": [
     "Hosting, social and paste domains the classifier labelled as blogs rather",
     "than skipping. plus.google.com alone carried 437 stories from many unrelated",
-    "authors, which is the buttondown.email failure in a different costume."
+    "authors, which is the buttondown.email failure in a different costume.",
+    "Status pages and release-note firehoses: their feeds emit one entry per datacenter per day, which floods the Newest view. Note this cannot be a regex on 'status|changelog' -- changelog.complete.org is John Goerzen's blog and electronupdate.blogspot.com is real teardowns."
   ],
   "deny": [
     "plus.google.com",
@@ -49,6 +46,16 @@
     "addons.mozilla.org",
     "media.ccc.de",
     "youtube.com",
-    "ycombinator.com"
+    "ycombinator.com",
+    "githubstatus.com",
+    "cloudflarestatus.com",
+    "fastmailstatus.com",
+    "redditstatus.com",
+    "status.cloud.google.com",
+    "statuspage.io",
+    "releases.ubuntu.com",
+    "chromestatus.com",
+    "chromereleases.googleblog.com",
+    "downdetector.com"
   ]
 }

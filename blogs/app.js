@@ -42,6 +42,9 @@ worker.onmessage = (e) => {
     if (m.seq < state.lastSeq) return; // a newer query already landed
     state.lastSeq = m.seq;
     render(m);
+  } else if (m.type === "paths-ready") {
+    // Re-run the current query so rows pick up their exact article URLs.
+    if (state.ready) run(true);
   } else if (m.type === "error") {
     $("#tagline").textContent = "Index failed to load — " + m.message;
     const status = $("#status");
@@ -253,9 +256,17 @@ function postRow(r) {
   const bits = [];
   bits.push(el("span", "r-blog", b.n));
 
-  const pts = el("span", "r-pts", "▲ " + r.p);
-  pts.setAttribute("aria-label", `${r.p} points on Hacker News`);
-  bits.push(pts);
+  // Feed-sourced posts never reached HN, so they have no score. Printing
+  // "▲ 0" would read as "nobody liked this" rather than "never submitted".
+  if (r.fd) {
+    const src = el("span", "r-feed", "from feed");
+    src.title = "Found in the blog's own feed — not submitted to Hacker News";
+    bits.push(src);
+  } else {
+    const pts = el("span", "r-pts", "▲ " + r.p);
+    pts.setAttribute("aria-label", `${r.p} points on Hacker News`);
+    bits.push(pts);
+  }
 
   const year = new Date(r.d).getUTCFullYear();
   const yr = el("span", "r-year", String(year));

@@ -447,6 +447,12 @@ body {
 .dot {
     opacity: 0.35;
 }
+.r-feed {
+    font-family: "Ubuntu Mono", monospace;
+    opacity: 0.75;
+    font-style: italic;
+}
+
 .r-tag {
     border: 1px solid var(--chip-border);
     border-radius: 999px;

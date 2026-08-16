@@ -45,16 +45,24 @@ async function load(base) {
   const meta = await metaRes.json();
   blogs = await blogsRes.json();
 
-  // Paths load with the rest rather than deferred: search going live before
-  // links resolve would render rows nobody can click.
-  const [titlesRes, binRes, pathsRes] = await Promise.all([
+  // paths.txt is 3.1MB gzipped and is only needed to build an href, never to
+  // match. Awaiting it added ~2.6s to time-to-first-result. Fetch it alongside
+  // but do not block readiness: until it lands, emit() yields an empty path and
+  // rows link to the blog's homepage instead of the exact post.
+  get(base, "paths.txt")
+    .then((r) => r.text())
+    .then((t) => {
+      paths = t.split("\n");
+      postMessage({ type: "paths-ready" });
+    })
+    .catch(() => {});   // links degrade to the blog home; search still works
+
+  const [titlesRes, binRes] = await Promise.all([
     get(base, "titles.txt"),
     get(base, "posts.bin"),
-    get(base, "paths.txt"),
   ]);
   const text = await titlesRes.text();
   const buf = await binRes.arrayBuffer();
-  paths = (await pathsRes.text()).split("\n");
 
   titles = text.split("\n");
   const n = meta.n_posts;
@@ -102,6 +110,32 @@ function topN(pool, key, limit) {
   return best;
 }
 
+/* Keep at most `cap` posts from any one blog in a page of results.
+ * Without this, a single high-cadence publisher owns the entire Newest view --
+ * cloudflarestatus.com filled all 8 top slots with per-datacenter notices. */
+function diversify(ordered, cap, limit) {
+  const seen = new Map();
+  const kept = [];
+  const overflow = [];
+  for (const i of ordered) {
+    const b = blogId[i];
+    const c = seen.get(b) || 0;
+    if (c < cap) {
+      seen.set(b, c + 1);
+      kept.push(i);
+      if (kept.length === limit) return kept;
+    } else if (overflow.length < limit) {
+      overflow.push(i);
+    }
+  }
+  // Backfill rather than return a short page when few blogs matched.
+  for (const i of overflow) {
+    if (kept.length === limit) break;
+    kept.push(i);
+  }
+  return kept;
+}
+
 function passes(i, f) {
   if (f.blogId >= 0 && blogId[i] !== f.blogId) return false;
   if (f.topicMask && !(topicMask[i] & 0x0fff & f.topicMask)) return false;
@@ -123,6 +157,7 @@ function emit(ordered, total) {
     s: kindSource[i] >> 3,
     h: hnId[i],
     kr: (topicMask[i] >> 14) & 1,   // kind came from a title rule, not a fallback
+    fd: (topicMask[i] >> 13) & 1,   // sourced from the blog's feed, not from HN
     dead: (topicMask[i] >> 15) & 1,
   }));
   return { rows, total };
@@ -187,19 +222,21 @@ function searchPosts(q, f, limit, sortMode) {
   // Explicit sorts bypass relevance ranking entirely: if you asked for "most
   // upvoted", match quality must not reorder the answer. uFuzzy already decided
   // membership; sort only decides order.
+  const cap = f.blogId >= 0 ? Infinity : 3;
+  const wide = cap === Infinity ? limit : limit * 5;
   if (sortMode === "points") {
-    return emit(topN(pool, (i) => points[i], limit), total);
+    return emit(diversify(topN(pool, (i) => points[i], wide), cap, limit), total);
   }
   if (sortMode === "date") {
-    return emit(topN(pool, (i) => day[i], limit), total);
+    return emit(diversify(topN(pool, (i) => day[i], wide), cap, limit), total);
   }
   if (sortMode === "oldest") {
-    return emit(topN(pool, (i) => -day[i], limit), total);
+    return emit(diversify(topN(pool, (i) => -day[i], wide), cap, limit), total);
   }
 
   let ordered;
   if (!q) {
-    ordered = topN(pool, (i) => score[i], limit);
+    ordered = diversify(topN(pool, (i) => score[i], wide), cap, limit);
   } else {
     // info()/sort() cost scales with the match set, and a one-letter query
     // matches most of the corpus. Bound it: keep the highest-scoring INFO_CAP
