@@ -2,7 +2,10 @@
 :root {
     --bg: #f9e6d3;
     --fg: #222;
-    --accent: #ef7e5c;
+    --accent: #ef7e5c;        /* fills, borders, decoration only */
+    --accent-text: #a63c1c;   /* 5.26:1 on --bg -- accent is 2.21:1, unusable as text */
+    --on-accent: #241a12;     /* 6.34:1 on the light accent fill */
+    --focus-ring: #222;       /* 13.1:1 -- an orange ring was invisible on cream */
     --max-w: 820px;
     --sp: 1rem;
     --secondary-text: #555;
@@ -17,6 +20,9 @@
     --bg: #282828;
     --fg: #ebdbb2;
     --accent: #fb4934;
+    --accent-text: #fe8a76;   /* 6.40:1 on --bg */
+    --on-accent: #241a12;     /* 4.96:1 on the dark accent fill */
+    --focus-ring: #ebdbb2;    /* 10.75:1 on --bg */
     --secondary-text: #a89984;
     --desc-text: #bdae93;
     --chip-bg: rgba(60, 56, 54, 0.6);
@@ -85,7 +91,7 @@ body {
     white-space: nowrap;
 }
 .back-link:hover {
-    color: var(--accent);
+    color: var(--accent-text);
 }
 
 .tagline {
@@ -164,7 +170,7 @@ body {
 }
 .mode-switch button.active {
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
 }
 
 /* --- Filters --- */
@@ -212,8 +218,8 @@ body {
 .chip[aria-pressed="true"] {
     background: var(--accent);
     border-color: var(--accent);
-    color: #fff;
-    font-weight: 500;
+    color: var(--on-accent);
+    font-weight: 600;
 }
 .chip .count {
     opacity: 0.6;
@@ -239,7 +245,7 @@ body {
 .reset {
     font-family: inherit;
     font-size: 0.82rem;
-    color: var(--accent);
+    color: var(--accent-text);
     background: none;
     border: 0;
     cursor: pointer;
@@ -281,8 +287,8 @@ body {
 
 .sort-switch button.active {
     background: var(--accent);
-    color: #fff;
-    font-weight: 500;
+    color: var(--on-accent);
+    font-weight: 600;
 }
 
 .suggests {
@@ -298,7 +304,7 @@ body {
 .suggests button {
     font-family: inherit;
     font-size: 0.82rem;
-    color: var(--accent);
+    color: var(--accent-text);
     background: transparent;
     border: 1px dashed var(--chip-border);
     border-radius: 999px;
@@ -332,7 +338,7 @@ body {
     letter-spacing: -0.2px;
 }
 .pin-name:hover {
-    color: var(--accent);
+    color: var(--accent-text);
 }
 
 .pin-desc {
@@ -345,7 +351,7 @@ body {
 .pin-clear {
     font-family: inherit;
     font-size: 0.8rem;
-    color: var(--accent);
+    color: var(--accent-text);
     background: none;
     border: 0;
     cursor: pointer;
@@ -361,15 +367,27 @@ body {
 }
 
 /* --- Status --- */
-.status {
+.status-row {
     margin: 0.9rem 0 0.3rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+.status-ms {
+    font-size: 0.8rem;
+    color: var(--secondary-text);
+    font-family: "Ubuntu Mono", monospace;
+    opacity: 0.7;
+}
+.status {
+    margin: 0;
     font-size: 0.85rem;
     color: var(--secondary-text);
     font-family: "Ubuntu Mono", monospace;
     min-height: 1.4em;
 }
 .status .hl {
-    color: var(--accent);
+    color: var(--accent-text);
 }
 
 /* --- Results --- */
@@ -377,7 +395,7 @@ body {
     list-style: none;
 }
 
-.results li {
+.results > li {
     border-bottom: 1px solid var(--rule);
 }
 
@@ -393,7 +411,7 @@ body {
         padding-left 0.13s ease;
 }
 .results a.row:hover,
-.results li.sel a.row {
+.results > li.sel a.row {
     background: var(--hover);
     border-left-color: var(--accent);
     padding-left: 0.8rem;
@@ -406,7 +424,7 @@ body {
 }
 .r-title mark {
     background: transparent;
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: 700;
 }
 
@@ -446,7 +464,7 @@ body {
    Every li must establish a containing block: without it these absolutely
    positioned buttons escape their row, stack on top of each other, and steal
    clicks meant for the row below. */
-.results li {
+.results > li {
     position: relative;
 }
 
@@ -465,14 +483,14 @@ body {
     transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.results li:hover .hn-link,
-.results li.sel .hn-link,
+.results > li:hover .hn-link,
+.results > li.sel .hn-link,
 .hn-link:focus-visible {
     opacity: 1;
 }
 
 .hn-link:hover {
-    color: var(--accent);
+    color: var(--accent-text);
     border-color: var(--accent);
 }
 
@@ -550,7 +568,7 @@ body {
     margin-top: 0.4rem;
 }
 .finder-footer a {
-    color: var(--accent);
+    color: var(--accent-text);
     text-decoration: none;
 }
 .finder-footer a:hover {
@@ -570,7 +588,7 @@ body {
     background: var(--accent);
     border: none;
     border-radius: 50%;
-    color: white;
+    color: var(--on-accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -617,6 +635,6 @@ body {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--focus-ring);
     outline-offset: 2px;
 }

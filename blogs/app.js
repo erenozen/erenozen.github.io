@@ -42,6 +42,17 @@ worker.onmessage = (e) => {
     if (m.seq < state.lastSeq) return; // a newer query already landed
     state.lastSeq = m.seq;
     render(m);
+  } else if (m.type === "error") {
+    $("#tagline").textContent = "Index failed to load — " + m.message;
+    const status = $("#status");
+    status.textContent = "";
+    const retry = el("button", "more", "Retry");
+    retry.addEventListener("click", () => {
+      $("#tagline").textContent = "Loading index…";
+      status.textContent = "";
+      worker.postMessage({ type: "load", base: "data/" });
+    });
+    status.appendChild(retry);
   }
 };
 
@@ -173,6 +184,10 @@ function highlight(text, q) {
 }
 
 function render(m) {
+  // Dispatch on the mode the worker echoed, not current state: clicking a mode
+  // tab mutates state.mode synchronously while a query is still in flight, and
+  // the seq guard only drops results OLDER than one already rendered.
+  const mode = m.mode || state.mode;
   const list = $("#results");
   list.textContent = "";
   const status = $("#status");
@@ -184,9 +199,16 @@ function render(m) {
   if (!m.rows.length) {
     $("#suggests").hidden = !!state.q.trim() || state.blog >= 0;
     renderPin();
-    status.textContent = "";
+    // Clearing a polite live region announces nothing, so the last count the
+    // user heard stays their mental model. Say the failure out loud.
+    const qq = state.q.trim();
+    status.textContent = qq
+      ? `No matches for \u201c${qq}\u201d`
+      : "Nothing matches these filters";
+    $("#status-ms").textContent = "";
     list.appendChild(noResults());
     $("#more").hidden = true;
+    selectRow(-1);
     return;
   }
 
@@ -196,16 +218,19 @@ function render(m) {
     date: "newest first",
     oldest: "oldest first",
   };
+  // Timing lives OUTSIDE the live region: it changes on every keystroke and
+  // would queue an announcement per character that differs only in the ms.
   status.innerHTML =
-    `<span class="hl">${m.total.toLocaleString()}</span> ${state.mode === "blogs" ? "blogs" : "posts"}` +
-    ` · ${ORDER[state.sort]} · ${m.ms.toFixed(1)}ms`;
+    `<span class="hl">${m.total.toLocaleString()}</span> ${mode === "blogs" ? "blogs" : "posts"}` +
+    ` · ${ORDER[state.sort]}`;
+  $("#status-ms").textContent = m.ms.toFixed(1) + "ms";
 
   $("#suggests").hidden = !!state.q.trim() || state.blog >= 0;
   renderPin();
 
   const frag = document.createDocumentFragment();
   for (const r of m.rows) {
-    frag.appendChild(state.mode === "blogs" ? blogRow(r) : postRow(r));
+    frag.appendChild(mode === "blogs" ? blogRow(r) : postRow(r));
   }
   list.appendChild(frag);
   $("#more").hidden = m.rows.length >= m.total;
@@ -372,7 +397,7 @@ function noResults() {
 
 let sel = -1;
 function selectRow(i) {
-  const rows = [...document.querySelectorAll("#results li")];
+  const rows = [...document.querySelectorAll("#results > li")];
   rows.forEach((r) => r.classList.remove("sel"));
   sel = i;
   if (i >= 0 && rows[i]) {
@@ -382,7 +407,7 @@ function selectRow(i) {
 }
 
 document.addEventListener("keydown", (e) => {
-  const rows = document.querySelectorAll("#results li");
+  const rows = document.querySelectorAll("#results > li");
   if (e.key === "/" && document.activeElement !== $("#q")) {
     e.preventDefault();
     $("#q").focus();
@@ -406,7 +431,13 @@ document.addEventListener("keydown", (e) => {
       selectRow(-1);
       $("#q").focus();
     } else selectRow(sel - 1);
-  } else if (e.key === "Enter" && sel >= 0 && rows[sel]) {
+  } else if (
+    e.key === "Enter" && sel >= 0 && rows[sel] &&
+    (document.activeElement === $("#q") || document.activeElement === document.body)
+  ) {
+    // Without the focus check, Enter on ANY button (sort, theme toggle, a
+    // footer link) also re-opened the selected article.
+    e.preventDefault();
     const a = rows[sel].querySelector("a");
     if (a) window.open(a.href, "_blank", "noopener");
   }

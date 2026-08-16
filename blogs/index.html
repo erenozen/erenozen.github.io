@@ -87,7 +87,10 @@
             </div>
 
             <div class="pin" id="pin" hidden></div>
-            <div class="status" id="status" aria-live="polite"></div>
+            <div class="status-row">
+                <div class="status" id="status" aria-live="polite" aria-atomic="true"></div>
+                <span class="status-ms" id="status-ms"></span>
+            </div>
             <ol class="results" id="results"></ol>
             <div class="more-wrap">
                 <button id="more" class="more" hidden>Show more</button>

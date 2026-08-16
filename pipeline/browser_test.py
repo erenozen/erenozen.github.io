@@ -154,6 +154,62 @@ def main():
         print("  top blog:", first_blog[:104])
         page.click('.mode-switch button[data-mode="posts"]')
 
+        # --- REGRESSION: blogs-mode total must not equal the page size ---
+        page.click('.mode-switch button[data-mode="blogs"]')
+        page.fill("#q", "")
+        page.wait_for_timeout(800)
+        btxt = page.locator("#status").inner_text()
+        btotal = int(btxt.split()[0].replace(",", "")) if btxt else 0
+        brows = page.locator("#results > li").count()
+        check(btotal > brows, "blogs mode reports the true total, not the page size",
+              f"{brows} rows of {btotal}")
+        check(not page.locator("#more").is_hidden(), "blogs mode offers Show more")
+        page.click('.mode-switch button[data-mode="posts"]')
+        page.wait_for_timeout(500)
+
+        # --- REGRESSION: relevance must not collapse into popularity ---
+        page.fill("#q", "rust")
+        page.click('.sort-switch button[data-sort="relevance"]')
+        page.wait_for_timeout(800)
+        rel = page.evaluate(
+            "() => [...document.querySelectorAll('#results > li .r-title')].slice(0,5).map(e=>e.textContent)")
+        page.click('.sort-switch button[data-sort="points"]')
+        page.wait_for_timeout(800)
+        pop = page.evaluate(
+            "() => [...document.querySelectorAll('#results > li .r-title')].slice(0,5).map(e=>e.textContent)")
+        check(rel != pop, "relevance ordering differs from popularity ordering")
+        on_topic = sum(1 for t in rel if "rust" in t.lower())
+        check(on_topic >= 4, "relevance top 5 are on-topic for 'rust'", f"{on_topic}/5")
+        page.click('.sort-switch button[data-sort="relevance"]')
+
+        # --- contrast: matched text must not be the least legible thing on screen ---
+        def lum(css_rgb):
+            nums = [int(x) for x in css_rgb.replace("rgb(", "").replace(")", "").split(",")[:3]]
+            def ch(c):
+                c = c / 255
+                return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+            r, g, b = (ch(v) for v in nums)
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+        for theme in ("light", "dark"):
+            if theme == "dark":
+                page.click(".theme-toggle")
+                page.wait_for_timeout(400)
+            page.fill("#q", "rust")
+            page.wait_for_timeout(700)
+            cols = page.evaluate('''() => {
+                const m = document.querySelector('#results > li .r-title mark');
+                const body = getComputedStyle(document.body).backgroundColor;
+                return m ? [getComputedStyle(m).color, body] : null;
+            }''')
+            if cols:
+                l1, l2 = lum(cols[0]), lum(cols[1])
+                ratio = (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+                check(ratio >= 4.5, f"matched-text contrast passes AA ({theme})",
+                      f"{ratio:.2f}:1")
+        page.click(".theme-toggle")
+        page.wait_for_timeout(300)
+
         # --- keyboard ---
         page.fill("#q", "rust")
         page.wait_for_timeout(600)

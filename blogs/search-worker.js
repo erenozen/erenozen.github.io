@@ -29,10 +29,18 @@ let termHits = null;   // set when the OR fallback fired: idx -> terms matched
 
 const DAY0 = Date.UTC(2006, 0, 1) / 86400000;
 
+async function get(base, name) {
+  const res = await fetch(base + name);
+  // A 404 on titles.txt does not reject -- res.text() happily returns the HTML
+  // error page and the index goes live silently corrupt. Check status.
+  if (!res.ok) throw new Error(`${name}: HTTP ${res.status}`);
+  return res;
+}
+
 async function load(base) {
   const [metaRes, blogsRes] = await Promise.all([
-    fetch(base + "meta.json"),
-    fetch(base + "blogs.json"),
+    get(base, "meta.json"),
+    get(base, "blogs.json"),
   ]);
   const meta = await metaRes.json();
   blogs = await blogsRes.json();
@@ -40,9 +48,9 @@ async function load(base) {
   // Paths load with the rest rather than deferred: search going live before
   // links resolve would render rows nobody can click.
   const [titlesRes, binRes, pathsRes] = await Promise.all([
-    fetch(base + "titles.txt"),
-    fetch(base + "posts.bin"),
-    fetch(base + "paths.txt"),
+    get(base, "titles.txt"),
+    get(base, "posts.bin"),
+    get(base, "paths.txt"),
   ]);
   const text = await titlesRes.text();
   const buf = await binRes.arrayBuffer();
@@ -50,6 +58,9 @@ async function load(base) {
 
   titles = text.split("\n");
   const n = meta.n_posts;
+  if (buf.byteLength < n * 16) {
+    throw new Error(`posts.bin truncated: ${buf.byteLength} < ${n * 16}`);
+  }
   let o = 0;
   blogId = new Uint32Array(buf, o, n); o += n * 4;
   points = new Uint16Array(buf, o, n); o += n * 2;
@@ -216,7 +227,11 @@ function searchPosts(q, f, limit, sortMode) {
     const info = uf.info(cand, titles, q);
     const order = uf.sort(info, titles, q);
     const rank = new Map();
-    for (let r = 0; r < order.length; r++) rank.set(cand[info.idx[order[r]]], r);
+    // info.idx[k] is ALREADY a haystack index (uFuzzy sets info.idx[b] = idxs[n]),
+    // and our haystack is the full `titles` array. Indexing `cand` with it again
+    // was a second bogus lookup that yielded undefined for nearly every entry,
+    // leaving the rank map empty and collapsing "Best" into pure score order.
+    for (let r = 0; r < order.length; r++) rank.set(info.idx[order[r]], r);
     const tier = (i) => {
       const r = rank.get(i);
       return r === undefined ? 3 : r < 200 ? 0 : r < 1000 ? 1 : 2;
@@ -248,6 +263,12 @@ function searchBlogs(q, f, limit, sortMode) {
     const order = uf.sort(info, hay, q);
     pool = order.map((r) => pool[info.idx[r]]);
   }
+  // Capture the true match count BEFORE any truncation: topN returns at most
+  // `limit` items, so reading pool.length afterwards reported "40 blogs" for
+  // every query and made render() hide "Show more" (40 >= 40), stranding all
+  // but the first page. searchPosts already captures total up front.
+  const total = pool.length;
+
   // For blogs, "upvotes" means the blog's median HN score and "newest" means
   // most recently seen on HN -- the nearest honest equivalents.
   if (sortMode === "points") pool = topN(pool, (i) => blogs[i].m, limit);
@@ -256,13 +277,20 @@ function searchBlogs(q, f, limit, sortMode) {
   else if (!q) pool = topN(pool, (i) => blogs[i].q, limit);
   return {
     rows: pool.slice(0, limit).map((i) => ({ i, ...blogs[i] })),
-    total: pool.length,
+    total,
   };
 }
 
 onmessage = (e) => {
   const m = e.data;
-  if (m.type === "load") return void load(m.base);
+  if (m.type === "load") {
+    // A rejected promise inside a worker does NOT trigger worker.onerror, so
+    // without this the page sits on "Loading index..." forever, in silence.
+    load(m.base).catch((err) =>
+      postMessage({ type: "error", message: String((err && err.message) || err) }),
+    );
+    return;
+  }
   if (!ready) return;
   if (m.type === "query") {
     const t0 = performance.now();
