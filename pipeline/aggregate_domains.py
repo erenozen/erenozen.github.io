@@ -93,19 +93,26 @@ def blog_key(url):
 
     sld = get_sld(host) or host
 
+    # Subdomain check FIRST. Several hosts appear in both sets (wordpress.com,
+    # tumblr.com, substack.com): the author is the subdomain when there is one,
+    # and only the path when the URL sits on the platform root. Running the path
+    # rule first split randomascii.wordpress.com into /2014, /2018 and /2022 --
+    # 147 blogs fragmented into date archives, Terence Tao's among them.
+    if sld in SUBDOMAIN_PLATFORMS and host != sld:
+        return host, f"https://{host}"
+
     # Author lives in the path on these hosts.
     if sld in PATH_PLATFORMS or host in PATH_PLATFORMS:
         seg = [s for s in p.path.split("/") if s]
         if seg:
             first = seg[0]
             # medium.com/@user, dev.to/user -- but skip generic route segments
-            if first.lower() not in {"p", "tag", "search", "feed", "s", "m"}:
+            # and date-archive paths, which are never an author.
+            if (first.lower() not in {"p", "tag", "search", "feed", "s", "m",
+                                      "post", "posts", "blog", "archive"}
+                    and not re.fullmatch(r"(19|20)\d\d", first)):
                 return f"{host}/{first}", f"https://{host}/{first}"
         return None  # bare platform root is not a blog
-
-    # Author lives in the subdomain on these hosts: keep full hostname.
-    if sld in SUBDOMAIN_PLATFORMS and host != sld:
-        return host, f"https://{host}"
 
     # Otherwise the blog is the hostname (keeps blog.foo.com distinct from
     # foo.com, which matters: corporate eng blogs usually live on a subdomain).

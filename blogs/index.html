@@ -54,7 +54,14 @@
             </div>
 
             <div class="filters">
-                <div class="filter-row" id="topics" aria-label="Filter by topic"></div>
+                <details class="filter-disclosure" id="topic-wrap" open>
+                    <summary>Topics &amp; kind</summary>
+                    <div class="filter-row" id="topics" aria-label="Filter by topic"></div>
+                    <div class="filter-row secondary kind-row">
+                        <span class="sort-label">Kind</span>
+                        <div class="filter-row inline" id="kinds"></div>
+                    </div>
+                </details>
                 <div class="filter-row secondary">
                     <span class="sort-label">Sort</span>
                     <div class="sort-switch" role="group" aria-label="Sort order">
@@ -70,8 +77,6 @@
                     </label>
                 </div>
                 <div class="filter-row secondary">
-                    <span class="sort-label">Kind</span>
-                    <div class="filter-row inline" id="kinds"></div>
                     <span class="spacer"></span>
                     <button id="reset" class="reset" hidden>clear filters</button>
                 </div>

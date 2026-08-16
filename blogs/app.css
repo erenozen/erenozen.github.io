@@ -178,6 +178,16 @@ body {
     margin-top: 0.75rem;
 }
 
+/* On a phone the taxonomy alone was 116px of a 689px wall of chrome that
+   pushed every result below the fold. Collapse it there; keep it open on
+   wider screens where it costs nothing. */
+.filter-disclosure > summary {
+    display: none;
+}
+.filter-disclosure[open] > summary {
+    display: none;
+}
+
 .filter-row {
     display: flex;
     flex-wrap: wrap;
@@ -614,6 +624,30 @@ body {
 }
 
 @media (max-width: 560px) {
+    .suggests button:nth-child(n + 5) {
+        display: none;   /* three worked examples is enough on a phone */
+    }
+    .finder-hero h1 {
+        margin-bottom: 0.1rem;
+    }
+    .filters {
+        margin-top: 0.5rem;
+    }
+    .status-row {
+        margin: 0.5rem 0 0.2rem;
+    }
+    .filter-disclosure > summary,
+    .filter-disclosure[open] > summary {
+        display: list-item;
+        font-size: 0.85rem;
+        color: var(--secondary-text);
+        cursor: pointer;
+        padding: 0.15rem 0;
+        user-select: none;
+    }
+    .tagline {
+        font-size: 0.85rem;
+    }
     .search-wrap {
         flex-direction: column;
     }

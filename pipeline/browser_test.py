@@ -293,6 +293,18 @@ def main():
         overflow = page.evaluate(
             "() => document.documentElement.scrollWidth > document.documentElement.clientWidth")
         check(not overflow, "no horizontal overflow on mobile")
+
+        # How much chrome sits above the first result on a phone?
+        page.set_viewport_size({"width": 360, "height": 640})
+        page.reload(wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        top = page.evaluate(
+            "() => document.querySelector('#results > li').getBoundingClientRect().top")
+        visible = page.evaluate(
+            "() => [...document.querySelectorAll('#results > li')].filter(e => e.getBoundingClientRect().top < 640).length")
+        check(top < 480, "first result is reachable on a 360x640 phone", f"y={top:.0f}px")
+        check(visible >= 1, "at least one result in the opening viewport", f"{visible} rows")
         page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/mobile.png")
 
         browser.close()

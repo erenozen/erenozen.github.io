@@ -9,9 +9,16 @@ result and lands on an unrelated post.
 """
 import json, os, struct, sys
 
+# Recall canaries. The platform-hosted entries are deliberate: substack and
+# wordpress blogs were once dropped entirely (a substack URL is
+# foo.substack.com/p/slug, and "p" was treated as a generic route segment) or
+# fragmented into date archives. Both failures were silent -- the index built
+# fine, it was just missing Terence Tao and Michal Zalewski.
 FAMOUS = [
     "danluu.com", "jvns.ca", "simonwillison.net", "rachelbythebay.com",
     "lwn.net", "blog.cloudflare.com", "antirez.com", "nullprogram.com",
+    "randomascii.wordpress.com", "lcamtuf.substack.com",
+    "terrytao.wordpress.com", "fgiesen.wordpress.com",
 ]
 
 def main():

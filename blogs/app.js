@@ -74,6 +74,12 @@ function onIndexReady() {
     "index built " + new Date(m.built * 1000).toISOString().slice(0, 10);
 
   buildChips($("#topics"), m.topics, state.topics, "topic");
+  // Collapsed on phones, where the taxonomy alone pushed every result below
+  // the fold. Any active topic filter forces it open so the state stays visible.
+  const wrap = $("#topic-wrap");
+  if (window.matchMedia("(max-width: 560px)").matches && !state.topics.size) {
+    wrap.open = false;
+  }
   buildChips($("#kinds"), m.kinds, state.kinds, "kind");
 
   document.querySelectorAll("#suggests button").forEach((b) => {
@@ -237,7 +243,12 @@ function render(m) {
   }
   list.appendChild(frag);
   $("#more").hidden = m.rows.length >= m.total;
-  selectRow(-1);
+  if (pendingFocusRow >= 0) {
+    selectRow(Math.min(pendingFocusRow, m.rows.length - 1));
+    pendingFocusRow = -1;
+  } else {
+    selectRow(-1);
+  }
 }
 
 function postRow(r) {
@@ -247,6 +258,7 @@ function postRow(r) {
   a.href = r.u ? b.h.replace(/\/$/, "") + r.u : b.h;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
+  a.tabIndex = -1;   // reachable by arrow keys; not a tab stop
 
   const t = el("div", "r-title");
   t.appendChild(highlight(r.t, state.q));
@@ -407,19 +419,36 @@ function noResults() {
 /* ---------- keyboard ---------- */
 
 let sel = -1;
+
+function inSearchUI() {
+  const a = document.activeElement;
+  return a === document.body || a === $("#q") || $("#results").contains(a);
+}
+
 function selectRow(i) {
   const rows = [...document.querySelectorAll("#results > li")];
   rows.forEach((r) => r.classList.remove("sel"));
   sel = i;
   if (i >= 0 && rows[i]) {
     rows[i].classList.add("sel");
+    // Move real focus, not just a CSS class: a visual-only cursor is invisible
+    // to a screen reader, and native focus makes Enter work without a synthetic
+    // handler that could fire while focus sits on some other control.
+    const a = rows[i].querySelector("a.row");
+    if (a) a.focus({ preventScroll: true });
     rows[i].scrollIntoView({ block: "nearest" });
   }
 }
 
 document.addEventListener("keydown", (e) => {
   const rows = document.querySelectorAll("#results > li");
-  if (e.key === "/" && document.activeElement !== $("#q")) {
+  // WCAG 2.1.4: a bare printable-character shortcut must not fire while the
+  // user is typing anywhere. Only claim "/" from the document itself, and never
+  // when it carries a modifier (Ctrl+/ and Cmd+/ belong to the browser).
+  if (
+    e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey &&
+    document.activeElement === document.body
+  ) {
     e.preventDefault();
     $("#q").focus();
     $("#q").select();
@@ -432,11 +461,12 @@ document.addEventListener("keydown", (e) => {
     }
     selectRow(-1);
   } else if (e.key === "ArrowDown") {
-    if (!rows.length) return;
+    // Do not hijack page scrolling unless the user is actually in the search UI.
+    if (!rows.length || !inSearchUI()) return;
     e.preventDefault();
     selectRow(Math.min(sel + 1, rows.length - 1));
   } else if (e.key === "ArrowUp") {
-    if (!rows.length) return;
+    if (!rows.length || !inSearchUI()) return;
     e.preventDefault();
     if (sel <= 0) {
       selectRow(-1);
@@ -491,11 +521,18 @@ $("#hide-news").addEventListener("change", (e) => {
 });
 
 $("#more").addEventListener("click", () => {
+  // The button hides itself once everything is shown, dropping focus to <body>
+  // and sending a keyboard user back to the top of the page.
+  const resumeAt = document.querySelectorAll("#results > li").length;
   state.limit += PAGE * 2;
+  pendingFocusRow = resumeAt;
   run(true);
 });
 
+let pendingFocusRow = -1;
+
 $("#reset").addEventListener("click", () => {
+  $("#q").focus();
   state.topics.clear();
   state.kinds.clear();
   state.blog = -1;
