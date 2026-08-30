@@ -22,9 +22,17 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent / "blogs"
 PORT = 8801
-QUERIES = ["sqlite internals", "rust async", "kernel scheduler", "dns works",
-           "postmortem outage", "writing a compiler", "garbage collection",
-           "tcp congestion", "docker networking", "regex engine"]
+QUERIES = [
+    # one strong match
+    "sqlite internals", "dns works", "tcp congestion", "docker networking",
+    # a handful
+    "kernel scheduler", "postmortem outage", "regex engine", "type inference",
+    # enough to fill a page, which is where the order-sensitivity bit
+    "writing a compiler", "memory allocator", "distributed consensus",
+    "browser rendering", "database index", "build system",
+    # far more than a page
+    "rust async", "garbage collection",
+]
 
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self,*a,**k): super().__init__(*a,directory=str(ROOT),**k)
@@ -49,24 +57,32 @@ def main():
         pg.goto(f"http://127.0.0.1:{PORT}/", wait_until="load")
         pg.wait_for_function("() => !document.querySelector('#q').disabled", timeout=90000)
         pg.wait_for_function("() => document.querySelector('#load-note').hidden", timeout=90000)
+
+        # One worker for every query. Spinning up a fresh one per query re-read
+        # the whole 5MB index each time, which put a second on each of them and
+        # was the only reason to keep the query list short.
+        pg.evaluate("""() => new Promise(ready => {
+            const w = new Worker('search-worker.js');
+            let pending = null;
+            w.onmessage = (e) => {
+                if (e.data.type === 'ready') return;
+                if (e.data.type === 'titles-complete') return ready();
+                if (e.data.type === 'results' && pending) { pending(e.data.rows.map(r => r.i)); pending = null; }
+            };
+            w.postMessage({type: 'load', base: 'data/'});
+            window.__ask = (q) => new Promise(res => {
+                pending = res;
+                w.postMessage({type:'query', seq:1, q, mode:'posts', sort:'relevance',
+                    limit:40, filters:{topicMask:0,kindMask:0,blogId:-1,hideNews:false,
+                    sinceDay:0,sinceYear:0,hideDead:false,hiddenSourceMask:0}});
+            });
+        })""")
         print(f"       {'query':22s} {'truth':>6s} {'ret':>5s} {'hit':>5s}  "
               f"worst title not returned")
         for q in QUERIES:
             want = truth(titles, q)
             # news off, so the comparison is against the same corpus the UI shows
-            got = pg.evaluate("""async (q) => new Promise(res => {
-                const w = new Worker('search-worker.js');
-                w.postMessage({type:'load', base:'data/'});
-                w.onmessage = (e) => {
-                    if (e.data.type === 'ready') {
-                        w.onmessage = (e2) => { if (e2.data.type === 'results')
-                            res(e2.data.rows.map(r => r.i)); };
-                        w.postMessage({type:'query', seq:1, q, mode:'posts', sort:'relevance',
-                            limit:40, filters:{topicMask:0,kindMask:0,blogId:-1,hideNews:false,
-                            sinceDay:0,sinceYear:0,hideDead:false,hiddenSourceMask:0}});
-                    }
-                };
-            })""", q)
+            got = pg.evaluate("(q) => window.__ask(q)", q)
             hit = len(want & set(got))
             missed = sorted(want - set(got))
             worst = titles[missed[0]][:44] if missed else "-"
