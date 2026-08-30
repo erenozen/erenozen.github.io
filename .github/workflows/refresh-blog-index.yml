@@ -148,6 +148,17 @@ jobs:
       - name: Sanity-check the built index
         run: python pipeline/check_index.py blogs/data work/prev_meta.json
 
+      # test.yml runs these on every push -- including this job's own commit,
+      # which is too late: by then the index is on main and served. Running them
+      # here means a refresh that would break search or the page never lands.
+      # ~90s against a 170 minute job.
+      - name: Check the new index in a browser
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+          python pipeline/search_eval.py
+          python pipeline/browser_test.py
+
       # The corpus size is quoted in prose on two pages. Left alone it drifts:
       # the portfolio was still advertising 111k posts from 5,979 blogs after
       # the index had grown to 165k and 10,535.
