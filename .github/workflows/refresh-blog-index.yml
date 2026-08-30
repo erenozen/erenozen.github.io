@@ -171,15 +171,49 @@ jobs:
       - name: Update the feed-URL seed
         run: python pipeline/update_feed_urls.py pipeline/feed_urls.tsv work/feeds.jsonl
 
+      # Push, and if main moved underneath us, replay onto the new head rather
+      # than losing the run. This job takes up to two hours; a single unrelated
+      # commit during that window rejected the push and discarded everything --
+      # observed on the first real run.
+      #
+      # Replay, not rebase. What we produce is generated output, so the right
+      # resolution is unconditionally ours for blogs/data and the feed seed --
+      # while the prose files are NOT restored from our copy, because main may
+      # have edited them for unrelated reasons. sync_counts.py rewrites the
+      # numbers into whatever those files now say.
       - name: Commit if changed
         run: |
+          set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add blogs/data blogs/index.html index.html sitemap.xml \
-                  pipeline/feed_urls.tsv
+          ARTIFACTS="blogs/data pipeline/feed_urls.tsv"
+          TRACKED="$ARTIFACTS blogs/index.html index.html sitemap.xml"
+
+          git add $TRACKED
           if git diff --cached --quiet; then
             echo "index unchanged; nothing to commit"
-          else
-            git commit -m "Refresh blog index ($(date -u +%Y-%m-%d))"
-            git push
+            exit 0
           fi
+          MSG="Refresh blog index ($(date -u +%Y-%m-%d))"
+          git commit -m "$MSG"
+
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            echo "push rejected; main moved. Replaying onto the new head."
+            tar -cf /tmp/artifacts.tar $ARTIFACTS
+            git fetch origin main
+            git reset --hard origin/main
+            tar -xf /tmp/artifacts.tar
+            python pipeline/sync_counts.py
+            git add $TRACKED
+            if git diff --cached --quiet; then
+              echo "new head already carries this index; nothing to do"
+              exit 0
+            fi
+            git commit -m "$MSG"
+          done
+          echo "::error::could not push after 3 attempts"
+          exit 1
