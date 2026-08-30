@@ -217,7 +217,14 @@ function passes(i, f) {
   if (f.sinceDay && day[i] < f.sinceDay) return false;
   if (f.hideDead && (topicMask[i] >> 15) & 1) return false;
   const ks = kindSource[i];
-  if (f.blogId < 0 && f.hideNews && (f.hiddenSourceMask >> (ks >> 3)) & 1) return false;
+  // An explicit source choice wins over the newsroom toggle. Otherwise asking
+  // for Newsroom while newsrooms are hidden would return nothing, and the
+  // reader would have to notice a second control to explain the first.
+  if (f.sourceMask) {
+    if (!((f.sourceMask >> (ks >> 3)) & 1)) return false;
+  } else if (f.blogId < 0 && f.hideNews && (f.hiddenSourceMask >> (ks >> 3)) & 1) {
+    return false;
+  }
   if (f.kindMask && !((f.kindMask >> (ks & 7)) & 1)) return false;
   return true;
 }
@@ -483,7 +490,9 @@ function searchBlogs(q, f, limit, sortMode) {
   for (let i = 0; i < blogs.length; i++) {
     const b = blogs[i];
     if (f.topicMask && !(b.tm & f.topicMask)) continue;
-    if (f.hideNews && (f.hiddenSourceMask >> b.s) & 1) continue;
+    if (f.sourceMask) {
+      if (!((f.sourceMask >> b.s) & 1)) continue;
+    } else if (f.hideNews && (f.hiddenSourceMask >> b.s) & 1) continue;
     // For a blog, "since" means still active: `l` is the year it was last seen
     // on HN. This is the only way to ask for blogs that have not gone quiet.
     if (f.sinceYear && b.l < f.sinceYear) continue;

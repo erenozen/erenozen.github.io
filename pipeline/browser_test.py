@@ -429,6 +429,43 @@ def main():
         check(mismatch == 0, "dead tag and archive link always travel together",
               f"{mismatch} mismatched rows")
 
+        # --- source filter ---
+        page.goto(base, wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        page.wait_for_timeout(300)
+        src_names = page.evaluate(
+            "() => [...document.querySelectorAll('#sources .chip')].map(e => e.textContent)")
+        check("Personal" in src_names, "source chips render", ", ".join(src_names))
+        # "Institution" is in the taxonomy and classifies nothing; a chip that
+        # can only ever return zero results is worse than no chip.
+        check("Institution" not in src_names,
+              "empty source classes get no chip", ", ".join(src_names))
+
+        page.click('#sources .chip:has-text("Personal")')
+        page.wait_for_timeout(600)
+        srcs = page.evaluate(
+            "() => [...document.querySelectorAll('#results .r-tag')].map(e => e.textContent)")
+        check(not ({"Newsroom", "Vendor"} & set(srcs)),
+              "Personal-only excludes hidden sources", ", ".join(sorted(set(srcs)))[:60])
+        check("src=" in page.url, "source filter is in the URL", page.url[-40:])
+
+        # An explicit source must beat the newsroom toggle, or asking for
+        # Newsroom while newsrooms are hidden silently returns nothing.
+        page.click('#sources .chip:has-text("Personal")')   # off
+        page.click('#sources .chip:has-text("Newsroom")')
+        page.wait_for_timeout(600)
+        n_news = page.evaluate(
+            "() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
+        check(n_news > 0, "Newsroom-only works despite the hide toggle",
+              f"{n_news:,} posts")
+        check(page.evaluate("() => document.querySelector('#hide-news').disabled"),
+              "the newsroom toggle is disabled while a source is chosen")
+        page.click("#reset")
+        page.wait_for_timeout(600)
+        check(not page.evaluate("() => document.querySelector('#hide-news').disabled"),
+              "clearing filters re-enables the newsroom toggle")
+
         # --- date range ---
         page.goto(base, wait_until="load")
         page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)

@@ -17,6 +17,7 @@ const state = {
   sort: "relevance",
   topics: new Set(),
   kinds: new Set(),
+  sources: new Set(),
   hideNews: true,
   since: 0,          // years back; 0 = any time
   hideDead: false,
@@ -106,6 +107,13 @@ function onIndexReady() {
     wrap.open = false;
   }
   buildChips($("#kinds"), m.kinds, state.kinds, "kind");
+  // Only sources that actually have blogs. "Institution" is declared in the
+  // taxonomy and classifies nothing, and a chip that can only ever return
+  // zero results is worse than no chip.
+  const srcCount = new Map();
+  for (const b of state.blogs) srcCount.set(b.s, (srcCount.get(b.s) || 0) + 1);
+  buildChips($("#sources"), m.sources, state.sources, "source",
+             (i) => (srcCount.get(i) || 0) > 0);
 
   // The longest date filter is relative (8 years back), so its label has to be
   // computed. Shipped as "Since 2018", which would have quietly meant "since
@@ -144,9 +152,10 @@ function showLoadNote() {
   n.textContent = `loading ${Math.round((100 * state.loaded) / state.nPosts)}% of the corpus`;
 }
 
-function buildChips(host, items, set, kind) {
+function buildChips(host, items, set, kind, include) {
   host.textContent = "";
   items.forEach((it, i) => {
+    if (include && !include(i)) return;
     const b = el("button", "chip", it.name);
     b.setAttribute("aria-pressed", "false");
     b.dataset.idx = i;
@@ -154,6 +163,7 @@ function buildChips(host, items, set, kind) {
     b.addEventListener("click", () => {
       set.has(i) ? set.delete(i) : set.add(i);
       b.setAttribute("aria-pressed", String(set.has(i)));
+      if (kind === "source") syncNewsToggle();
       state.limit = PAGE;
       run();
     });
@@ -168,6 +178,8 @@ function filters() {
   for (const i of state.topics) topicMask |= 1 << i;
   let kindMask = 0;
   for (const i of state.kinds) kindMask |= 1 << i;
+  let sourceMask = 0;
+  for (const i of state.sources) sourceMask |= 1 << i;
   // The worker stores dates as day offsets from 2006-01-01, so convert once
   // here rather than per post inside the filter loop.
   let sinceDay = 0, sinceYear = 0;
@@ -182,6 +194,7 @@ function filters() {
     kindMask,
     blogId: state.blog,
     hideNews: state.hideNews,
+    sourceMask,
     sinceDay,
     sinceYear,
     hideDead: state.hideDead,
@@ -257,7 +270,7 @@ function render(m) {
   list.textContent = "";
   const status = $("#status");
   const anyFilter =
-    state.topics.size || state.kinds.size || !state.hideNews ||
+    state.topics.size || state.kinds.size || state.sources.size || !state.hideNews ||
     state.since || state.hideDead || state.q.trim() || state.blog >= 0;
   $("#reset").hidden = !anyFilter;
 
@@ -789,6 +802,8 @@ $("#reset").addEventListener("click", () => {
   $("#q").focus();
   state.topics.clear();
   state.kinds.clear();
+  state.sources.clear();
+  syncNewsToggle();
   state.blog = -1;
   state.sort = "relevance";
   state.since = 0;
@@ -803,6 +818,17 @@ $("#reset").addEventListener("click", () => {
   state.limit = PAGE;
   run(true);
 });
+
+/* The newsroom toggle does nothing while an explicit source is chosen, so say
+ * so rather than leaving a live-looking control that has no effect. */
+function syncNewsToggle() {
+  const box = $("#hide-news");
+  const wrap = box.closest(".toggle");
+  const off = state.sources.size > 0;
+  box.disabled = off;
+  wrap.classList.toggle("disabled", off);
+  wrap.title = off ? "Not used while a Source filter is active" : "";
+}
 
 /* Reflect state back onto both segmented controls. Used by reset and by URL
  * restore, which otherwise leave the buttons showing the previous selection
@@ -825,6 +851,7 @@ function writeURL() {
   if (state.sort !== "relevance") p.set("sort", state.sort);
   if (state.topics.size) p.set("t", [...state.topics].join(","));
   if (state.kinds.size) p.set("k", [...state.kinds].join(","));
+  if (state.sources.size) p.set("src", [...state.sources].join(","));
   if (!state.hideNews) p.set("news", "1");
   if (state.since) p.set("since", String(state.since));
   if (state.hideDead) p.set("dead", "0");
@@ -867,6 +894,8 @@ function readURL() {
   state.blog = bkey ? state.blogs.findIndex((x) => x.n === bkey) : -1;
   apply("t", state.topics, $("#topics"));
   apply("k", state.kinds, $("#kinds"));
+  apply("src", state.sources, $("#sources"));
+  syncNewsToggle();
 }
 
 /* ---------- theme (mirrors the portfolio's toggle) ---------- */
