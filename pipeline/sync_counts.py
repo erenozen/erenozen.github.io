@@ -10,7 +10,7 @@ posts from 5,979 blogs" of a corpus that had grown to 165k and 10,535.
 Every substitution asserts it matched. A count-sync that silently does nothing
 is worse than no count-sync, because it looks like the numbers are maintained.
 """
-import json, re, sys
+import json, re, sys, time
 
 
 def sub_once(text, pattern, repl, label):
@@ -55,7 +55,17 @@ def main():
                  f"{FLOOR_BLOGS:,}+ blogs, but the index has {posts:,} and "
                  f"{blogs:,}. Re-render the card.")
 
-    print(f"counts synced: {approx} posts, {blogs:,} blogs")
+    # The sitemap advertises when /blogs/ last changed. Left static it would
+    # claim the index is a year old the month after it was written.
+    built = time.strftime("%Y-%m-%d", time.gmtime(meta["built"]))
+    p = "sitemap.xml"
+    s = open(p, encoding="utf-8").read()
+    s = sub_once(s,
+                 r"(<loc>https://erenozen\.dev/blogs/</loc>\s*<lastmod>)[\d-]+(</lastmod>)",
+                 rf"\g<1>{built}\g<2>", "sitemap lastmod")
+    open(p, "w", encoding="utf-8").write(s)
+
+    print(f"counts synced: {approx} posts, {blogs:,} blogs, sitemap {built}")
 
 
 if __name__ == "__main__":

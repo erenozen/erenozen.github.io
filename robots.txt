@@ -1,0 +1,9 @@
+# erenozen.dev
+User-agent: *
+Allow: /
+
+# The finder's index files are a 5 MB binary/text corpus for the in-browser
+# search worker, not pages. Crawling them costs bandwidth and indexes nothing.
+Disallow: /blogs/data/
+
+Sitemap: https://erenozen.dev/sitemap.xml
