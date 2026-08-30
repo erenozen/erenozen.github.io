@@ -401,6 +401,15 @@ function blogRow(r) {
   meta.appendChild(el("span", "r-pts", `${r.c} posts · median ▲${r.m}`));
   const src = state.meta.sources[r.s];
   if (src) meta.appendChild(el("span", "r-tag", src.name));
+  // Only for blogs that have gone quiet. Stamping "last active 2026" on the
+  // 4,218 current ones is noise; "last active 2016" is the single most useful
+  // thing to know before subscribing to one.
+  const thisYear = new Date().getUTCFullYear();
+  if (r.l && r.l < thisYear - 1) {
+    const dormant = el("span", "r-tag r-dormant", `last active ${r.l}`);
+    dormant.title = "No posts seen since then, on Hacker News or in its feed";
+    meta.appendChild(dormant);
+  }
   for (const ti of state.meta.topics.keys()) {
     if ((r.tm >> ti) & 1) meta.appendChild(el("span", "r-tag", state.meta.topics[ti].name));
   }

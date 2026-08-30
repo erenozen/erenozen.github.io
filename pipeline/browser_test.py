@@ -458,6 +458,32 @@ def main():
         check((href or "").startswith("http"), "subscribe link is an absolute feed URL", href or "")
         check(not page.locator("#opml").is_hidden(), "OPML export offered in blogs mode")
 
+        # Dormancy is shown only where it is news. A "last active" stamp on a
+        # blog that posted this month is noise; on one that stopped in 2016 it
+        # is the most useful thing on the row.
+        import datetime as _d
+        cy = _d.datetime.utcnow().year
+        page.goto(base + "?mode=blogs&sort=oldest", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        page.wait_for_timeout(400)
+        years = page.evaluate(
+            "() => [...document.querySelectorAll('.r-dormant')].map(e => +e.textContent.match(/\\d{4}/)[0])")
+        check(len(years) > 0, "dormant blogs are labelled", f"{len(years)} of 40 rows")
+        check(all(y < cy - 1 for y in years),
+              "only genuinely dormant blogs are labelled",
+              f"newest labelled {max(years) if years else 'n/a'}, cutoff {cy - 2}")
+        page.goto(base + "?mode=blogs&since=1", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        page.wait_for_timeout(400)
+        check(page.locator(".r-dormant").count() == 0,
+              "filtering to active blogs leaves no dormant labels",
+              f"{page.locator('.r-dormant').count()} labelled")
+        page.goto(base + "?mode=blogs", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+
         # The action group must not overlap: two absolutely-positioned links
         # would, because "5 posts" and "1,284 posts" are different widths.
         overlap = page.evaluate("""() => {

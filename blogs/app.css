@@ -639,6 +639,13 @@ body {
     }
 }
 
+/* Dormant blogs. Same weight as any other tag -- this is information, not a
+   warning; plenty of finished blogs are worth reading precisely because they
+   are finished. */
+.r-dormant {
+    font-style: italic;
+}
+
 /* --- OPML export --- */
 .opml {
     font-family: inherit;
