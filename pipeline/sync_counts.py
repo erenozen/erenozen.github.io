@@ -14,11 +14,16 @@ import json, re, sys
 
 
 def sub_once(text, pattern, repl, label):
-    new, n = re.subn(pattern, repl, text, count=1)
-    if n != 1:
-        sys.exit(f"sync_counts: pattern for {label} did not match -- "
-                 "the wording changed; update this script")
-    return new
+    # Exactly one match, not "at least one". re.subn(count=1) reports success
+    # after replacing the first of several, which is how a page ends up with a
+    # fresh number in one place and a stale one three lines below -- the
+    # og:description sits right under the meta description and reads almost
+    # identically.
+    hits = re.findall(pattern, text)
+    if len(hits) != 1:
+        sys.exit(f"sync_counts: pattern for {label} matched {len(hits)} times, "
+                 "expected exactly 1 -- the wording changed; update this script")
+    return re.sub(pattern, repl, text, count=1)
 
 
 def main():
@@ -39,6 +44,16 @@ def main():
                  f"{approx} posts from {blogs:,} programming blogs",
                  "portfolio call-to-action")
     open(p, "w", encoding="utf-8").write(s)
+
+    # og.png is a rendered image, so it cannot be regenerated in CI without a
+    # browser. It quotes round-down floors instead of live numbers for exactly
+    # that reason; this asserts the floors are still true rather than letting
+    # the card quietly start understating -- or worse, overstating -- the corpus.
+    FLOOR_POSTS, FLOOR_BLOGS = 160_000, 10_000
+    if posts < FLOOR_POSTS or blogs < FLOOR_BLOGS:
+        sys.exit(f"sync_counts: og.png claims {FLOOR_POSTS:,}+ posts and "
+                 f"{FLOOR_BLOGS:,}+ blogs, but the index has {posts:,} and "
+                 f"{blogs:,}. Re-render the card.")
 
     print(f"counts synced: {approx} posts, {blogs:,} blogs")
 
