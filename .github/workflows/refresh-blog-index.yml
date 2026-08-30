@@ -25,7 +25,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -62,11 +62,26 @@ jobs:
       - name: Aggregate into candidate blogs
         run: python pipeline/aggregate_domains.py work/hn_stories.jsonl work/candidates.jsonl 3
 
+      # Feed fetching is latency-bound and runs at roughly 50 blogs/min, so a
+      # full pass over 13.4k classified blogs is about four hours -- this job
+      # would simply have timed out, every month, producing nothing. Instead it
+      # is cached, resumable and time-boxed: each run refreshes what it can
+      # within the budget, newest-needed first, and the next run continues.
+      - name: Restore feed cache
+        uses: actions/cache@v4
+        with:
+          path: work/feeds.jsonl
+          key: feeds-${{ github.run_id }}
+          restore-keys: feeds-
+
       - name: Fetch feeds for classified blogs
+        env:
+          TIME_BUDGET: "2400" # 40 min
+          REFRESH_DAYS: "30" # a feed fetched last month is not freshness
         run: |
           python pipeline/select_for_feeds.py \
             work/candidates.jsonl pipeline/classified work/feed_targets.jsonl
-          python pipeline/fetch_feeds.py work/feed_targets.jsonl work/feeds.jsonl 16
+          python pipeline/fetch_feeds.py work/feed_targets.jsonl work/feeds.jsonl 32
 
       # A classification agent that reads the wrong evidence file produces
       # perfectly valid-looking output while silently dropping a whole batch.
@@ -94,6 +109,8 @@ jobs:
           python pipeline/build_index.py \
             work/hn_dedup.jsonl work/candidates.jsonl pipeline/classified \
             blogs/data work/feeds.jsonl pipeline/dead_urls.txt
+        env:
+          FEED_CAP: "12"
 
       - name: Sanity-check the built index
         run: python pipeline/check_index.py blogs/data

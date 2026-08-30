@@ -105,6 +105,15 @@ def main():
     check(n_feed > 0, f"feed posts present ({n_feed:,})")
     check(all(p == 0 for p, t in zip(pts, tm) if t & (1 << 13)),
           "feed posts carry no fabricated HN score")
+
+    # The per-blog feed cap is the only thing stopping one high-cadence
+    # publisher from owning the Newest view. It used to be applied per RECORD,
+    # so a blog refetched by the monthly refresh could contribute twice its
+    # share -- with the cap still printed in the build log as if it held.
+    from collections import Counter
+    per_blog = Counter(b for b, t in zip(blog_ids, tm) if t & (1 << 13))
+    worst = max(per_blog.values()) if per_blog else 0
+    check(worst <= 12, f"no blog exceeds the feed cap (worst {worst})")
     check(max((t & 0x0FFF).bit_length() for t in tm) <= 12, "topic mask within 12 topics")
     n_rule = sum(1 for t in tm if t & (1 << 14))
     check(0.10 < n_rule / n < 0.60,

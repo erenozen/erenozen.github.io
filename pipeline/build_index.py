@@ -346,7 +346,15 @@ def main():
         for i in range(n_hn):
             have.add(canonical_url(blogs_json[col_blog[i]]["h"].rstrip("/") + paths[i]))
 
-        n_feed = skipped_date = skipped_forum = firehose = 0
+        # Merge records by blog before capping.
+        #
+        # A monthly refresh refetches stale blogs, so feeds.jsonl legitimately
+        # holds several records per key. Iterating lines directly reset the
+        # per-blog cap on each one -- a twice-fetched blog could contribute 24
+        # posts under a "cap 12/blog" rule whose entire job is stopping one
+        # publisher from owning the view. Entries are unioned so a post that has
+        # since scrolled out of the feed window is not lost, and deduped by URL.
+        merged = {}
         for line in open(feeds_path):
             try:
                 r = json.loads(line)
@@ -355,6 +363,22 @@ def main():
             key = r.get("key")
             if key not in blog_id or not r.get("entries"):
                 continue
+            cur = merged.get(key)
+            if cur is None:
+                merged[key] = r
+                continue
+            if (r.get("fetched_at") or 0) >= (cur.get("fetched_at") or 0):
+                newer, older = r, cur
+            else:
+                newer, older = cur, r
+            urls = {e.get("url") for e in newer["entries"]}
+            newer["entries"] = newer["entries"] + [
+                e for e in older["entries"] if e.get("url") not in urls]
+            merged[key] = newer
+
+        n_feed = skipped_date = skipped_forum = firehose = 0
+        for r in merged.values():
+            key = r["key"]
             if FORUM_HOST.search(key.split("/")[0]):
                 skipped_forum += 1
                 continue

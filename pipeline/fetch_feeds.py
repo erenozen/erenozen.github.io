@@ -102,7 +102,16 @@ def parse_feed(feed_url):
     return out, (d.feed.get("title") if d.get("feed") else None)
 
 
+DEADLINE = None       # set by main() when TIME_BUDGET is given
+
+
 def handle(blog):
+    # Checked inside the worker, not around the submit loop: every blog is
+    # submitted up front, so the only way to stop early is to let the queued
+    # ones fall through. A skipped blog writes nothing, so the next run picks
+    # it up exactly as if it had never been queued.
+    if DEADLINE and time.time() > DEADLINE:
+        return None
     home = blog["home"]
     try:
         feed_url = discover_feed(home)
@@ -116,40 +125,102 @@ def handle(blog):
 
 
 def main():
+    global DEADLINE
     src, out_path = sys.argv[1], sys.argv[2]
     workers = int(sys.argv[3]) if len(sys.argv) > 3 else 24
 
+    # A full pass over every classified blog runs at ~52 blogs/min, so 13.4k
+    # blogs is roughly four hours -- far past any CI job's patience. With a
+    # budget the run always ends on time and the next one continues, because
+    # output is append-only and keyed by blog.
+    budget = int(os.environ.get("TIME_BUDGET", "0"))
+    if budget:
+        DEADLINE = time.time() + budget
+    # 0 means "never refetch", which is right for a one-off backfill and wrong
+    # for a monthly refresh: the whole point of feeds is freshness, and a record
+    # fetched once would be quoted forever.
+    refresh_days = float(os.environ.get("REFRESH_DAYS", "0"))
+    now = time.time()
+
     blogs = [json.loads(l) for l in open(src)]
 
-    # Resumable: a full crawl is ~90 minutes and gets killed by wall-clock
-    # limits, so never truncate an existing partial result.
-    seen = set()
+    # Compact before anything else. With REFRESH_DAYS the file gains a record
+    # per blog per run, so a year of monthly refreshes is twelve copies of 13k
+    # blogs -- roughly a gigabyte, carried through the CI cache and loaded whole
+    # by build_index.py. Two generations is enough: build_index unions their
+    # entries, so the older one only contributes posts that have since scrolled
+    # out of the feed window. Steady state is one record per unrefreshed blog
+    # and two for each blog this run touched.
+    if os.path.exists(out_path):
+        by_key = {}
+        total = 0
+        for line in open(out_path):
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            total += 1
+            by_key.setdefault(r.get("key"), []).append(r)
+        # Trim to one record per key BEFORE the run, so that afterwards there
+        # are at most two: the previous generation and this one. Trimming to two
+        # here instead lets the run add a third, which is how "two generations"
+        # quietly becomes unbounded.
+        if total > len(by_key):
+            with open(out_path, "w") as f:
+                for rows in by_key.values():
+                    rows.sort(key=lambda r: r.get("fetched_at") or 0)
+                    f.write(json.dumps(rows[-1], ensure_ascii=False) + "\n")
+            print(f"compacted: {total} records -> {len(by_key)}", flush=True)
+
+    fetched_at = {}
     if os.path.exists(out_path):
         for line in open(out_path):
             try:
-                seen.add(json.loads(line).get("key"))
+                r = json.loads(line)
             except Exception:
-                pass
-        if seen:
-            print(f"resuming: {len(seen)} blogs already fetched", flush=True)
-    blogs = [b for b in blogs if b["key"] not in seen]
+                continue
+            k = r.get("key")
+            if k:
+                fetched_at[k] = max(fetched_at.get(k, 0), r.get("fetched_at") or 0)
+        if fetched_at:
+            print(f"resuming: {len(fetched_at)} blogs already fetched", flush=True)
 
-    print(f"fetching feeds for {len(blogs)} blogs with {workers} workers", flush=True)
+    def age(b):
+        return now - fetched_at.get(b["key"], 0)
 
-    done = ok = 0
+    if refresh_days:
+        cutoff = refresh_days * 86400
+        blogs = [b for b in blogs if age(b) >= cutoff]
+    else:
+        blogs = [b for b in blogs if b["key"] not in fetched_at]
+
+    # Never-fetched blogs first (a newly classified blog is invisible until it
+    # lands), then stalest first, so the long tail cycles instead of starving
+    # behind the same head every month.
+    blogs.sort(key=lambda b: -age(b))
+
+    print(f"fetching feeds for {len(blogs)} blogs with {workers} workers"
+          + (f", {budget}s budget" if budget else ""), flush=True)
+
+    done = ok = skipped = 0
     with open(out_path, "a") as out, ThreadPoolExecutor(max_workers=workers) as ex:
         futs = {ex.submit(handle, b): b for b in blogs}
         for fut in as_completed(futs):
             r = fut.result()
+            if r is None:          # past the deadline; leave it for next time
+                skipped += 1
+                continue
             done += 1
             if r["entries"]:
                 ok += 1
+            r["fetched_at"] = int(time.time())
             out.write(json.dumps(r, ensure_ascii=False) + "\n")
             if done % 100 == 0:
                 out.flush()
                 print(f"  {done}/{len(blogs)} done, {ok} with entries", flush=True)
 
-    print(f"DONE: {ok}/{len(blogs)} blogs yielded feed entries")
+    print(f"DONE: {ok}/{done} blogs yielded feed entries"
+          + (f" ({skipped} left for the next run)" if skipped else ""))
 
 
 if __name__ == "__main__":
