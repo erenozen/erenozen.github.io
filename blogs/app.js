@@ -65,6 +65,8 @@ worker.onmessage = (e) => {
   } else if (m.type === "paths-ready" || m.type === "hn-ready") {
     // Re-run so rows pick up their exact article URL, then their HN thread.
     if (state.ready) run(true);
+  } else if (m.type === "similar") {
+    if (m.blog === state.blog) renderSimilar(m.rows);
   } else if (m.type === "export") {
     downloadOPML(m.rows, m.total);
   } else if (m.type === "error") {
@@ -424,6 +426,7 @@ function feedLink(href, name) {
 }
 
 function pinBlog(idx) {
+  if (idx !== state.blog) simRows = null;
   state.blog = idx;
   state.mode = "posts";
   state.q = "";
@@ -439,6 +442,11 @@ function pinBlog(idx) {
 function renderPin() {
   const host = $("#pin");
   host.textContent = "";
+  // Drives a phone-only rule that drops the corpus-wide tagline. Once a blog is
+  // pinned, "165,458 posts from 10,535 blogs" describes something the reader
+  // has explicitly navigated away from, and on a 640px screen it was costing
+  // 65px that the blog's own posts needed.
+  document.body.classList.toggle("has-pin", state.blog >= 0);
   if (state.blog < 0) {
     host.hidden = true;
     return;
@@ -463,6 +471,45 @@ function renderPin() {
     run(true);
   });
   host.appendChild(clear);
+
+  // Asked for once per pinned blog. renderPin runs on every keystroke while a
+  // blog is pinned, and re-requesting each time would rebuild nothing but would
+  // make the row flicker as it is replaced with an identical one.
+  if (simFor !== state.blog) {
+    simFor = state.blog;
+    host.appendChild(el("div", "pin-similar", ""));
+    worker.postMessage({ type: "similar", blog: state.blog, k: 5 });
+  } else if (simRows) {
+    host.appendChild(similarRow(simRows));
+  }
+}
+
+let simFor = -1;
+let simRows = null;
+
+function renderSimilar(rows) {
+  simRows = rows;
+  const slot = $("#pin .pin-similar");
+  if (!slot) return;
+  slot.replaceWith(similarRow(rows));
+}
+
+function similarRow(rows) {
+  const box = el("div", "pin-similar");
+  if (!rows.length) {
+    // Say so rather than leaving a gap: a blog with a short, very specific
+    // description genuinely has no near neighbours, and silence reads as a bug.
+    box.appendChild(el("span", "pin-similar-label", "No close matches indexed"));
+    return box;
+  }
+  box.appendChild(el("span", "pin-similar-label", "Similar"));
+  for (const r of rows) {
+    const b = el("button", "chip sim-chip", r.n);
+    b.title = r.o || `Show ${r.n}'s posts`;
+    b.addEventListener("click", () => pinBlog(r.i));
+    box.appendChild(b);
+  }
+  return box;
 }
 
 function noResults() {

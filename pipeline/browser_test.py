@@ -443,6 +443,43 @@ def main():
               f"streamed {final} vs cold {cold}")
         check(mid <= final, "mid-load count only grows", f"{mid} -> {final}")
 
+        # --- similar blogs ---
+        page.goto(base + "?b=jvns.ca", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector(".pin-similar .sim-chip", timeout=20000)
+        chips = page.locator(".pin-similar .sim-chip")
+        names = [chips.nth(i).inner_text() for i in range(chips.count())]
+        check(len(names) >= 3, "pinned blog gets recommendations", ", ".join(names[:3]))
+        check("wizardzines.com" in names,
+              "recommendations find the obvious neighbour", ", ".join(names))
+        check("jvns.ca" not in names, "a blog is never similar to itself")
+
+        # One shared rare token is a person's name, not a subject. These two
+        # matched jvns.ca purely on the surname "Evans" before the two-term rule.
+        check(not ({"ben-evans.com", "domainlanguage.com"} & set(names)),
+              "surname collisions are not recommendations", ", ".join(names))
+
+        page.click(".pin-similar .sim-chip")
+        page.wait_for_timeout(500)
+        pinned = page.locator(".pin-name").inner_text()
+        check(pinned == names[0], "clicking a recommendation pins it",
+              f"{pinned} vs {names[0]}")
+        rows_blogs = page.evaluate(
+            "() => [...new Set([...document.querySelectorAll('#results .r-blog')].map(e => e.textContent))]")
+        check(rows_blogs == [pinned], "the newly pinned blog owns the results",
+              str(rows_blogs)[:60])
+
+        # Same publisher's other properties are not a recommendation.
+        page.goto(base + "?b=blog.cloudflare.com", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector(".pin-similar", timeout=20000)
+        page.wait_for_timeout(400)
+        cf = page.evaluate(
+            "() => [...document.querySelectorAll('.pin-similar .sim-chip')].map(e => e.textContent)")
+        n_same = sum(1 for c in cf if c.endswith("cloudflare.com"))
+        check(n_same <= 1, "at most one sibling property is recommended",
+              f"{n_same} of {len(cf)}: {', '.join(cf)}")
+
         # --- mobile ---
         page.set_viewport_size({"width": 390, "height": 844})
         page.wait_for_timeout(400)
@@ -452,7 +489,10 @@ def main():
 
         # How much chrome sits above the first result on a phone?
         page.set_viewport_size({"width": 360, "height": 640})
-        page.reload(wait_until="load")
+        # Navigate explicitly. This used to reload whatever the previous block
+        # left in the address bar, so the headroom it measured depended on test
+        # order -- it silently started measuring a pinned blog.
+        page.goto(base, wait_until="load")
         page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
         page.wait_for_selector("#results > li", timeout=20000)
         top = page.evaluate(
@@ -488,6 +528,18 @@ def main():
                   (clash[0] if clash else "none")[:60])
 
         page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/mobile.png")
+
+        # A pinned blog adds a header, a description and a recommendation row
+        # above the results. That is the deepest the chrome ever gets, so it is
+        # the case worth asserting, not the shallowest.
+        page.goto(base + "?b=jvns.ca", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        page.wait_for_timeout(400)
+        ptop = page.evaluate(
+            "() => document.querySelector('#results > li').getBoundingClientRect().top")
+        check(ptop < 500, "first result stays reachable with a blog pinned on a phone",
+              f"y={ptop:.0f}px")
 
         browser.close()
     httpd.shutdown()

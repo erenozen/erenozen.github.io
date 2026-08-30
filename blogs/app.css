@@ -582,6 +582,51 @@ body {
     }
 }
 
+/* "More like this" under the pinned blog. Full width so the chips wrap under
+   the header rather than fighting it for the same line. */
+.pin-similar {
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.15rem;
+}
+.pin-similar-label {
+    font-size: 0.78rem;
+    color: var(--secondary-text);
+    font-family: "Ubuntu Mono", monospace;
+    margin-right: 0.15rem;
+}
+.sim-chip {
+    font-size: 0.76rem;
+    padding: 0.08rem 0.55rem;
+}
+
+/* On a phone the pin header, description and five chips ate 556px of a 640px
+   screen, leaving 84px for the results the pin exists to show. Three chips. */
+@media (max-width: 560px) {
+    .pin {
+        padding: 0.4rem 0.6rem;
+    }
+    /* Scroll the recommendations rather than wrapping them onto a second
+       line: all five stay reachable and the row costs 23px instead of 46. */
+    .pin-similar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .pin-similar::-webkit-scrollbar {
+        display: none;
+    }
+    .sim-chip {
+        flex: 0 0 auto;
+    }
+    body.has-pin .tagline {
+        display: none;
+    }
+}
+
 /* --- OPML export --- */
 .opml {
     font-family: inherit;

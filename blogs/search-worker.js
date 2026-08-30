@@ -361,6 +361,108 @@ function searchPosts(q, f, limit, sortMode) {
   return emit(ordered, total);
 }
 
+/* ---------- "more like this" ----------
+ *
+ * Finding one blog you like is the easy half; the useful question right after
+ * is what else reads like it. Built from the one-line descriptions, which are
+ * the only per-blog prose in the index, as TF-IDF cosine similarity nudged by
+ * topic overlap and source class.
+ *
+ * Two rules do most of the work:
+ *   - The blog's own domain is NOT part of the document. It matches on spelling
+ *     rather than subject.
+ *   - A candidate must share at least TWO weighted terms. One shared rare term
+ *     is nearly always a person's name -- rachelbythebay.com matched
+ *     rachel.fast.ai, jvns.ca matched Eric Evans and Benedict Evans, all on a
+ *     surname and nothing else. Two shared terms is a topic.
+ */
+const SIM_STOP = new Set(
+  ("the a an and or of to in for on with by from is are this that its his her their " +
+   "blog posts about writing notes site website essays personal").split(" "),
+);
+let simVec = null;      // Map(term -> weight)[] per blog
+let simInv = null;      // Map(term -> blog index[])
+
+function buildSimilarity() {
+  if (simVec) return;
+  const docs = blogs.map((b) =>
+    ((b.o || "").toLowerCase().match(/[a-z0-9+#]{3,}/g) || [])
+      .filter((w) => !SIM_STOP.has(w)),
+  );
+  const df = new Map();
+  for (const d of docs) for (const w of new Set(d)) df.set(w, (df.get(w) || 0) + 1);
+  const N = docs.length;
+  simVec = [];
+  simInv = new Map();
+  for (let i = 0; i < N; i++) {
+    const tf = new Map();
+    for (const w of docs[i]) tf.set(w, (tf.get(w) || 0) + 1);
+    const v = new Map();
+    let sq = 0;
+    for (const [w, c] of tf) {
+      const idf = Math.log(N / df.get(w));
+      if (idf <= 1.5) continue;         // a term two thirds of blogs share says nothing
+      const x = (1 + Math.log(c)) * idf;
+      v.set(w, x);
+      sq += x * x;
+    }
+    const nrm = Math.sqrt(sq) || 1;
+    for (const [w, x] of v) {
+      v.set(w, x / nrm);
+      if (!simInv.has(w)) simInv.set(w, []);
+      simInv.get(w).push(i);
+    }
+    simVec.push(v);
+  }
+}
+
+const popcount = (x) => {
+  let c = 0;
+  while (x) { x &= x - 1; c++; }
+  return c;
+};
+
+/* Same organisation: blog.cloudflare.com, cloudflare.com and
+ * radar.cloudflare.com are one publisher, and filling the list with a company's
+ * own properties is not a recommendation. */
+const org = (name) => name.split("/")[0].split(".").slice(-2).join(".");
+
+function similarBlogs(i, k) {
+  buildSimilarity();
+  if (i < 0 || i >= blogs.length) return [];
+  const score = new Map(), shared = new Map();
+  for (const [w, x] of simVec[i]) {
+    const list = simInv.get(w);
+    if (!list || list.length > 400) continue;   // too common to discriminate
+    for (const j of list) {
+      if (j === i) continue;
+      const y = simVec[j].get(w);
+      if (!y) continue;
+      score.set(j, (score.get(j) || 0) + x * y);
+      shared.set(j, (shared.get(j) || 0) + 1);
+    }
+  }
+  const bi = blogs[i], myOrg = org(bi.n);
+  const out = [];
+  for (const [j, raw] of score) {
+    if ((shared.get(j) || 0) < 2) continue;
+    const bj = blogs[j];
+    const inter = popcount(bi.tm & bj.tm), union = popcount(bi.tm | bj.tm) || 1;
+    let sc = raw * (0.55 + (0.45 * inter) / union);
+    if (bi.s === bj.s) sc *= 1.12;
+    out.push({ j, sc, same: org(bj.n) === myOrg });
+  }
+  out.sort((a, b) => b.sc - a.sc);
+  const kept = [];
+  let sameOrg = 0;
+  for (const r of out) {
+    if (r.same && ++sameOrg > 1) continue;   // one sibling property at most
+    kept.push({ i: r.j, ...blogs[r.j] });
+    if (kept.length === k) break;
+  }
+  return kept;
+}
+
 function searchBlogs(q, f, limit, sortMode) {
   let pool = [];
   for (let i = 0; i < blogs.length; i++) {
@@ -411,6 +513,10 @@ onmessage = (e) => {
     return;
   }
   if (!ready) return;
+  if (m.type === "similar") {
+    postMessage({ type: "similar", blog: m.blog, rows: similarBlogs(m.blog, m.k || 5) });
+    return;
+  }
   if (m.type === "export") {
     // The whole matching blogroll, not the rendered page -- an OPML of 40 rows
     // would silently be a fraction of what the filters describe. Ranked by
