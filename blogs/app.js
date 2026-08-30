@@ -506,7 +506,7 @@ function renderPin() {
   if (simFor !== state.blog) {
     simFor = state.blog;
     host.appendChild(el("div", "pin-similar", ""));
-    worker.postMessage({ type: "similar", blog: state.blog, k: 5 });
+    worker.postMessage({ type: "similar", blog: state.blog, k: 5, filters: filters() });
   } else if (simRows) {
     host.appendChild(similarRow(simRows));
   }
@@ -665,6 +665,10 @@ segGroup("since", (v) => (state.since = +v));
 
 $("#hide-news").addEventListener("change", (e) => {
   state.hideNews = e.target.checked;
+  // Recommendations are filtered by this too, and the pin survives the toggle,
+  // so the cached row would keep showing results from the old setting.
+  simFor = -1;
+  simRows = null;
   state.limit = PAGE;
   run(true);
 });

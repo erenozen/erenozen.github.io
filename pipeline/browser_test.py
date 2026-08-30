@@ -590,6 +590,35 @@ def main():
         check(rows_blogs == [pinned], "the newly pinned blog owns the results",
               str(rows_blogs)[:60])
 
+        # Recommendations honour the newsroom toggle. therecord.media is trade
+        # press (visible) and used to be recommended trendmicro.com, a vendor
+        # blog the reader had explicitly hidden.
+        page.goto(base + "?b=therecord.media", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector(".pin-similar", timeout=20000)
+        page.wait_for_timeout(500)
+        rec = page.evaluate(
+            "() => [...document.querySelectorAll('.sim-chip')].map(e => e.textContent)")
+        check("trendmicro.com" not in rec,
+              "hidden sources are not recommended while hidden", ", ".join(rec)[:70])
+        page.uncheck("#hide-news")
+        page.wait_for_timeout(900)
+        rec2 = page.evaluate(
+            "() => [...document.querySelectorAll('.sim-chip')].map(e => e.textContent)")
+        check(rec2 != rec, "unhiding newsrooms refreshes the recommendations",
+              ", ".join(rec2)[:70])
+
+        # A reader already looking at a hidden source reached it deliberately;
+        # answering "what else is like The Spectator" with nothing would be
+        # worse than answering with other magazines.
+        page.goto(base + "?b=spectator.co.uk", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector(".pin-similar", timeout=20000)
+        page.wait_for_timeout(500)
+        n_self = page.locator(".sim-chip").count()
+        check(n_self > 0, "a pinned hidden source still gets recommendations",
+              f"{n_self} chips")
+
         # Same publisher's other properties are not a recommendation.
         page.goto(base + "?b=blog.cloudflare.com", wait_until="load")
         page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)

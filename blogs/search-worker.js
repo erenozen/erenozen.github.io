@@ -427,9 +427,17 @@ const popcount = (x) => {
  * own properties is not a recommendation. */
 const org = (name) => name.split("/")[0].split(".").slice(-2).join(".");
 
-function similarBlogs(i, k) {
+function similarBlogs(i, k, f) {
   buildSimilarity();
   if (i < 0 || i >= blogs.length) return [];
+  // Respect the newsroom toggle, so a reader who hid newsrooms is not sent to
+  // one. The exception is a reader already looking AT a hidden source: they
+  // reached it deliberately, and answering "what else is like The Spectator"
+  // with nothing at all would be worse than answering it with other magazines.
+  const selfHidden = f && f.hideNews &&
+    ((f.hiddenSourceMask >> blogs[i].s) & 1);
+  const drop = (b) =>
+    f && f.hideNews && !selfHidden && ((f.hiddenSourceMask >> b.s) & 1);
   const score = new Map(), shared = new Map();
   for (const [w, x] of simVec[i]) {
     const list = simInv.get(w);
@@ -447,6 +455,7 @@ function similarBlogs(i, k) {
   for (const [j, raw] of score) {
     if ((shared.get(j) || 0) < 2) continue;
     const bj = blogs[j];
+    if (drop(bj)) continue;
     const inter = popcount(bi.tm & bj.tm), union = popcount(bi.tm | bj.tm) || 1;
     let sc = raw * (0.55 + (0.45 * inter) / union);
     if (bi.s === bj.s) sc *= 1.12;
@@ -514,7 +523,8 @@ onmessage = (e) => {
   }
   if (!ready) return;
   if (m.type === "similar") {
-    postMessage({ type: "similar", blog: m.blog, rows: similarBlogs(m.blog, m.k || 5) });
+    postMessage({ type: "similar", blog: m.blog,
+                  rows: similarBlogs(m.blog, m.k || 5, m.filters) });
     return;
   }
   if (m.type === "export") {
