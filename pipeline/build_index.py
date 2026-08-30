@@ -340,6 +340,7 @@ def main():
     # they rank below HN posts by default but are findable by search and make
     # "Newest" reflect what good blogs actually published rather than only what
     # reached the front page.
+    last_feed_year = {}
     if feeds_path and os.path.exists(feeds_path):
         from dedupe import canonical_url
         have = set()
@@ -426,6 +427,9 @@ def main():
                 path = path.replace("\n", "").replace("\r", "").strip()
                 have.add(cu)
                 taken += 1
+                yr = time.gmtime(ts).tm_year
+                if yr > last_feed_year.get(key, 0):
+                    last_feed_year[key] = yr
 
                 kind, kind_flag = None, 0
                 for ki, rx in KIND_RULES:
@@ -465,6 +469,19 @@ def main():
     if dead_urls:
         n_dead = sum(1 for t in col_tm if t & FLAG_DEAD)
         print(f"posts flagged dead: {n_dead:,} ({100*n_dead/max(n,1):.1f}%)")
+    # A blog's "last seen" year drove the Blogs-mode Since filter, whose whole
+    # purpose is separating live blogs from archives -- but it came only from
+    # Hacker News. A blog posting weekly that had not been submitted since 2019
+    # read as dead. Its own feed is the better evidence of life.
+    if last_feed_year:
+        revived = 0
+        for b in blogs_json:
+            y = last_feed_year.get(b["n"])
+            if y and y > b["l"]:
+                b["l"] = y
+                revived += 1
+        print(f"last-active year refreshed from feeds: {revived:,} blogs")
+
     print(f"posts indexed: {n:,}")
 
     # Order every column by descending baked score.
