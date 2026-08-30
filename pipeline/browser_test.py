@@ -5,7 +5,7 @@ Everything before this was static reasoning about code that had never been
 rendered. This serves blogs/ over HTTP (the worker needs a real origin -- it
 cannot load from file://) and exercises the paths a visitor takes.
 """
-import http.server, json, os, socketserver, sys, tempfile, threading, time
+import http.server, json, os, re, socketserver, sys, tempfile, threading, time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
@@ -122,9 +122,16 @@ def main():
         check(n > 0, "query returns results", f"{n} rows")
         print("  top:", first[:104])
 
-        # the multi-term fallback must be doing work here
+        # The multi-term fallback must be doing work here: "sqlite internals"
+        # matches exactly one title strictly, and hundreds once the per-term
+        # union kicks in. Parse the count -- this was a substring test for
+        # "1 posts", which also matches "521 posts", so it failed the moment a
+        # rebuilt index happened to return a count ending in 1.
         total = page.locator("#status").inner_text()
-        check("1 posts" not in total, "multi-term fallback widens recall", total)
+        m = re.search(r"([\d,]+)\s+posts", total)
+        n_total = int(m.group(1).replace(",", "")) if m else 0
+        check(n_total > 50, "multi-term fallback widens recall",
+              f"{n_total} posts for a query with 1 strict match")
 
         # --- href correctness: the row must point at the real article ---
         href = page.locator("#results li a.row").first.get_attribute("href")
