@@ -254,7 +254,13 @@ function searchPosts(q, f, limit, sortMode) {
     // terms each title hit -- strict results still sort first because they hit
     // all of them.
     const terms = q.split(/\s+/).filter((t) => t.length > 2);
-    if (terms.length > 1 && (!idxs || idxs.length < 25)) {
+    // Widen whenever the strict pass cannot fill a page, not just when it is
+    // nearly empty. uFuzzy matches terms in order, so "writing a compiler"
+    // found 34 titles and missed "A Compiler Writing Playground" -- and at 34,
+    // one over the old threshold of 25, it never widened. Six slots sat empty
+    // on a 40-row page with relevant results available. Strict matches are
+    // scored terms.length + 1, so widening only ever appends below them.
+    if (terms.length > 1 && (!idxs || idxs.length < 40)) {
       const hits = new Map();
       for (const i of idxs || []) hits.set(i, terms.length + 1);
       for (const t of terms) {
