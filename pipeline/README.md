@@ -19,17 +19,54 @@ by an LLM, and the UI hides `newsroom`/`vendor`/`institution` behind one toggle.
 
 | # | script | in → out |
 |---|---|---|
-| 1 | `pull_hn.py` | Algolia → `hn_stories.jsonl` (~507k stories ≥25 pts, 2006–now) |
-| 2 | `dedupe.py` | → `hn_dedup.jsonl` (collapses ~4.5% duplicate submissions) |
-| 3 | `aggregate_domains.py` | → `candidates.jsonl` (~18k candidate blogs, ≥3 stories) |
-| 4 | `fetch_feeds.py` | → `feeds.jsonl` (~65% feed discovery rate) |
+| 1 | `pull_hn.py` | Algolia → `hn_stories.jsonl` (507k stories ≥25 pts, 2006–now) |
+| 2 | `dedupe.py` | → `hn_dedup.jsonl` (463k; collapses ~4.5% duplicate submissions) |
+| 3 | `aggregate_domains.py` | → `candidates.jsonl` (18.3k candidate blogs, ≥3 stories) |
+| 4 | `select_for_feeds.py` + `fetch_feeds.py` | → `feeds.jsonl` (63% feed discovery rate) |
 | 5 | `build_evidence.py` | → `evidence/ev_NNN.txt` LLM batch files |
 | 6 | *(out of band)* | LLM classification → `classified/cls_NNN.jsonl` |
+| 6b | `validate_classifications.py` | fails if a batch was skipped or duplicated |
 | 7 | `build_index.py` | → `blogs/data/*` |
 | 8 | `check_index.py` | fails CI if the index is inconsistent |
+| 9 | `sync_counts.py` | rewrites the corpus size quoted in prose on two pages |
 
 `select_for_feeds.py` limits stage 4 to blogs that survived classification, so we
-never crawl the ~12k candidates that were never going to be indexed.
+never crawl candidates that were never going to be indexed.
+
+`check_links.py` is stage 0 of nothing — it runs by hand, HEAD-checks every
+indexed URL (154k, ~10h) and produces `dead_urls.txt`, which `build_index.py`
+takes as an optional last argument. 12% of the corpus no longer resolves, decaying
+from 32% of 2009 posts to 4% of 2025. Far too slow for CI, so the distilled list
+is committed and replayed; link rot only goes one way, so replaying is accurate
+between crawls.
+
+`browser_test.py` drives the built site in headless Chrome. Everything else here
+reasons about code that was never rendered; this is what catches an action pill
+sitting on top of a topic tag, or a result count that silently reports the page
+size instead of the match count.
+
+## Index layout
+
+`blogs/data/` is six files that must agree row-for-row. Nothing inside the index
+can detect a mismatch between them: every file stays individually well-formed and
+the UI happily renders one post's title beside another's URL.
+
+| file | contents | when it loads |
+|---|---|---|
+| `meta.json` | taxonomy, counts, hidden-source mask | blocking |
+| `blogs.json` | per-blog name, home, feed, topics, quality | blocking |
+| `posts.bin` | 12 B/post: blogId u32, points u16, day u16, topicMask u16, kindSource u8, score u8 | blocking |
+| `titles.txt` | one title per line | streamed; search goes live on chunk 1 |
+| `paths.txt` | one URL path per line | deferred |
+| `hn.bin` | 4 B/post: HN item id | deferred, after `paths.txt` |
+
+Every column is ordered by **descending score**, which is what makes streaming
+titles useful: the first bytes off the wire are the best posts, not arbitrary
+ones. `check_index.py` holds eight (HN id → title) pairs verified against the live
+Algolia API, because a permutation bug here is otherwise invisible.
+
+`topicMask` also carries flags: bit 13 feed-sourced, bit 14 kind-came-from-a-rule,
+bit 15 link-is-dead.
 
 ## Classification is deliberately out of band
 
@@ -56,6 +93,21 @@ python -m venv .venv && .venv/bin/pip install -r pipeline/requirements.txt
 OUT=work/hn.jsonl .venv/bin/python pipeline/pull_hn.py       # ~15 min, ~510 requests
 .venv/bin/python pipeline/dedupe.py work/hn.jsonl work/dedup.jsonl
 .venv/bin/python pipeline/aggregate_domains.py work/hn.jsonl work/cand.jsonl 3
-.venv/bin/python pipeline/build_index.py work/dedup.jsonl work/cand.jsonl pipeline/classified blogs/data
+.venv/bin/python pipeline/select_for_feeds.py work/cand.jsonl pipeline/classified work/targets.jsonl
+.venv/bin/python pipeline/fetch_feeds.py work/targets.jsonl work/feeds.jsonl 16
+FEED_CAP=12 .venv/bin/python pipeline/build_index.py \
+    work/dedup.jsonl work/cand.jsonl pipeline/classified blogs/data \
+    work/feeds.jsonl pipeline/dead_urls.txt
 .venv/bin/python pipeline/check_index.py blogs/data
+.venv/bin/python pipeline/sync_counts.py
+.venv/bin/python pipeline/browser_test.py                    # needs playwright + chrome
 ```
+
+To refresh link rot (slow, and optional — the committed `dead_urls.txt` stays
+valid because dead links do not come back):
+
+```bash
+.venv/bin/python pipeline/check_links.py blogs/data work/linkcheck.jsonl 96
+```
+
+It is resumable and keyed by URL, so it can be killed and restarted freely.

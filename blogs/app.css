@@ -387,7 +387,10 @@ body {
     font-size: 0.8rem;
     color: var(--secondary-text);
     font-family: "Ubuntu Mono", monospace;
-    opacity: 0.7;
+    /* No opacity. --secondary-text is 7.0:1 on cream by itself; dimming it to
+       0.7 dropped the rendered contrast to 3.19:1, under AA, which is invisible
+       to inspection because the token it names is fine. Size and colour already
+       de-emphasise it. */
 }
 .status {
     margin: 0;
@@ -459,8 +462,9 @@ body {
 }
 .r-feed {
     font-family: "Ubuntu Mono", monospace;
-    opacity: 0.75;
     font-style: italic;
+    /* Italic and monospace already set it apart; opacity 0.75 dropped a 7:1
+       token to 3.54:1 rendered. */
 }
 
 .r-tag {
@@ -518,9 +522,10 @@ body {
 }
 
 .r-dead {
-    color: #b4551f;
+    /* Was #b4551f at 0.9 opacity: 3.49:1, the least legible thing on the row.
+       A warning nobody can read is not a warning. */
+    color: #a03f10;
     border-color: currentColor;
-    opacity: 0.9;
 }
 [data-theme="dark"] .r-dead {
     color: #fe8019;
@@ -653,7 +658,6 @@ body {
     font-size: 0.78rem;
     color: var(--secondary-text);
     font-family: "Ubuntu Mono", monospace;
-    opacity: 0.75;
     white-space: nowrap;
 }
 

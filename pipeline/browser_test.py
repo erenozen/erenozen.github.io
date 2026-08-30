@@ -15,6 +15,37 @@ PORT = 8731
 
 failures = []
 
+JS_CONTRAST = r'''() => {
+                const lin = (c) => { c /= 255;
+                    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+                const L = (n) => 0.2126*lin(n[0]) + 0.7152*lin(n[1]) + 0.0722*lin(n[2]);
+                const bg = getComputedStyle(document.body).backgroundColor
+                             .match(/[\d.]+/g).map(Number);
+                // Flatten the element's own alpha onto what is behind it: a
+                // dimmed colour is not the colour the reader actually sees.
+                const eff = (el) => {
+                    const cs = getComputedStyle(el);
+                    // Hover-revealed links sit at opacity 0 until hovered;
+                    // measure the state the reader actually sees them in.
+                    const a = parseFloat(cs.opacity) || 1;
+                    const fg = cs.color.match(/[\d.]+/g).map(Number);
+                    const mix = fg.slice(0, 3).map((v, i) => v*a + bg[i]*(1-a));
+                    const l1 = L(mix), l2 = L(bg);
+                    return (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
+                };
+                const out = {};
+                for (const sel of [".opml", ".feed-link", ".sim-chip",
+                                   ".pin-similar-label", ".status-ms", ".pin-desc",
+                                   ".r-blog", ".r-pts", ".r-year", ".r-tag",
+                                   ".r-desc", ".sort-label", ".toggle span",
+                                   ".chip", ".reset", ".suggests button",
+                                   ".r-dead", ".r-feed", ".hn-link", ".load-note"]) {
+                    const el = document.querySelector(sel);
+                    if (el) out[sel] = eff(el);
+                }
+                return out;
+            }'''
+
 
 def check(ok, label, detail=""):
     print(("  ok   " if ok else "  FAIL ") + label + (f"  [{detail}]" if detail else ""))
@@ -210,6 +241,40 @@ def main():
         page.click(".theme-toggle")
         page.wait_for_timeout(300)
 
+        # --- contrast: every new control, in both themes ---
+        #
+        # Each of these was styled by eye against a cream background, where an
+        # orange that looks fine is often 2.2:1. Opacity counts: .load-note and
+        # .status-ms are dimmed, and dimming is exactly how small grey text
+        # slides under 4.5:1 without anyone noticing.
+        # Two pages, because no single view carries every style: the pin and
+        # its recommendations only exist with a blog pinned, and .r-dead only
+        # appears where the links have rotted.
+        for theme in ("light", "dark"):
+            ratios = {}
+            for url in ("?b=jvns.ca", "?sort=oldest"):
+                page.goto(base + url, wait_until="load")
+                page.wait_for_function("() => !document.querySelector('#q').disabled",
+                                       timeout=60000)
+                page.wait_for_selector("#results > li", timeout=20000)
+                page.wait_for_timeout(300)
+                if theme == "dark" and page.evaluate(
+                        "() => document.documentElement.dataset.theme !== 'dark'"):
+                    page.click(".theme-toggle")
+                    page.wait_for_timeout(400)
+                for k, v in page.evaluate(JS_CONTRAST).items():
+                    ratios[k] = min(ratios.get(k, 99), v)
+            worst = min(ratios.items(), key=lambda kv: kv[1]) if ratios else None
+            # The element count is in the message on purpose: a selector that
+            # stops matching turns this into a check that passes by measuring
+            # nothing, which is the failure mode it exists to prevent.
+            check(worst is not None and len(ratios) >= 14 and worst[1] >= 4.5,
+                  f"new controls pass AA ({theme})",
+                  f"worst {worst[0]} {worst[1]:.2f}:1 of {len(ratios)} styles"
+                  if worst else "no elements found")
+        page.click(".theme-toggle")
+        page.wait_for_timeout(300)
+
         # --- keyboard ---
         page.fill("#q", "rust")
         page.wait_for_timeout(600)
@@ -234,6 +299,13 @@ def main():
         page2.close()
 
         # --- suggestion chips (empty state) ---
+        # Explicit navigation, not just clearing the box: suggestions are hidden
+        # while a blog is pinned, and an earlier block leaves one pinned. Tests
+        # that inherit page state assert whatever the previous test happened to
+        # leave behind.
+        page.goto(base, wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
         page.fill("#q", "")
         page.wait_for_timeout(500)
         check(page.locator("#suggests").is_visible(), "suggestions show on empty query")
