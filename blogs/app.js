@@ -27,6 +27,7 @@ const state = {
   meta: null,
   blogs: [],
   ready: false,
+  prevMode: null,
   loadingCorpus: true,
   loaded: 0,
   nPosts: 0,
@@ -433,6 +434,11 @@ function feedLink(href, name) {
 
 function pinBlog(idx) {
   if (idx !== state.blog) simRows = null;
+  // Remember where the drill-down started. Pinning always switches to posts --
+  // that is the point -- but the way out is labelled "all blogs", and it used
+  // to leave you in posts mode looking at the whole corpus. The button
+  // promised one thing and did another.
+  if (state.blog < 0) state.prevMode = state.mode;
   state.blog = idx;
   state.mode = "posts";
   state.q = "";
@@ -473,6 +479,13 @@ function renderPin() {
   const clear = el("button", "pin-clear", "✕ all blogs");
   clear.addEventListener("click", () => {
     state.blog = -1;
+    // Arriving straight on ?b=... has no previous mode, and "all blogs" is the
+    // sensible destination from a single blog either way.
+    state.mode = state.prevMode || "blogs";
+    state.prevMode = null;
+    document.querySelectorAll(".mode-switch button").forEach((x) =>
+      x.classList.toggle("active", x.dataset.mode === state.mode),
+    );
     state.limit = PAGE;
     run(true);
   });

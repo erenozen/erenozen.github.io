@@ -336,10 +336,25 @@ def main():
         check("b=" in page.url, "pinned blog is in the URL", page.url[-46:])
         page.click("#pin .pin-clear")
         page.wait_for_timeout(700)
-        check(not page.locator("#pin").is_visible(), "clearing the pin restores all blogs")
+        page.wait_for_timeout(400)
+        # "all blogs" has to mean all blogs. This only asserted the pin header
+        # vanished, and passed the whole time the button was dumping the reader
+        # into the full posts corpus instead.
+        check(not page.locator("#pin").is_visible(), "clearing the pin hides the header")
+        back = page.evaluate(
+            "() => document.querySelector('.mode-switch .active').dataset.mode")
+        check(back == "blogs", "clearing the pin returns to blogs, as the label says",
+              f"landed in {back}")
+        check(page.locator("#results li .blog-open").count() > 0,
+              "blog rows are back after clearing the pin")
 
         # --- a11y: the meta line must not run numbers together ---
-        page.fill("#q", "kernel")
+        # Posts mode explicitly: a blog row's meta has no points-or-year label,
+        # so inheriting blogs mode from the block above turned this into a check
+        # that failed for the wrong reason.
+        page.goto(base + "?q=kernel", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
         page.wait_for_timeout(700)
         labels = page.evaluate('''() => {
             const m = document.querySelector('#results .r-meta');
