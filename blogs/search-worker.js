@@ -139,6 +139,10 @@ function diversify(ordered, cap, limit) {
 function passes(i, f) {
   if (f.blogId >= 0 && blogId[i] !== f.blogId) return false;
   if (f.topicMask && !(topicMask[i] & 0x0fff & f.topicMask)) return false;
+  // sinceDay is a day offset from DAY0, precomputed on the main thread so this
+  // stays one integer compare per post on the hot path.
+  if (f.sinceDay && day[i] < f.sinceDay) return false;
+  if (f.hideDead && (topicMask[i] >> 15) & 1) return false;
   const ks = kindSource[i];
   if (f.blogId < 0 && f.hideNews && (f.hiddenSourceMask >> (ks >> 3)) & 1) return false;
   if (f.kindMask && !((f.kindMask >> (ks & 7)) & 1)) return false;
@@ -290,6 +294,10 @@ function searchBlogs(q, f, limit, sortMode) {
     const b = blogs[i];
     if (f.topicMask && !(b.tm & f.topicMask)) continue;
     if (f.hideNews && (f.hiddenSourceMask >> b.s) & 1) continue;
+    // For a blog, "since" means still active: `l` is the year it was last seen
+    // on HN. This is the only way to ask for blogs that have not gone quiet.
+    if (f.sinceYear && b.l < f.sinceYear) continue;
+    if (f.needFeed && !b.f) continue;
     pool.push(i);
   }
   if (q) {
@@ -311,6 +319,7 @@ function searchBlogs(q, f, limit, sortMode) {
   if (sortMode === "points") pool = topN(pool, (i) => blogs[i].m, limit);
   else if (sortMode === "date") pool = topN(pool, (i) => blogs[i].l, limit);
   else if (sortMode === "oldest") pool = topN(pool, (i) => -blogs[i].l, limit);
+  else if (sortMode === "quality") pool = topN(pool, (i) => blogs[i].q, limit);
   else if (!q) pool = topN(pool, (i) => blogs[i].q, limit);
   return {
     rows: pool.slice(0, limit).map((i) => ({ i, ...blogs[i] })),
@@ -329,6 +338,19 @@ onmessage = (e) => {
     return;
   }
   if (!ready) return;
+  if (m.type === "export") {
+    // The whole matching blogroll, not the rendered page -- an OPML of 40 rows
+    // would silently be a fraction of what the filters describe. Ranked by
+    // quality and capped, because no one imports 3,000 feeds into a reader.
+    const f = { ...m.filters, needFeed: true };
+    const r = searchBlogs(m.q, f, m.cap, "quality");
+    postMessage({
+      type: "export",
+      total: r.total,
+      rows: r.rows.map((b) => ({ n: b.n, h: b.h, o: b.o, f: b.f })),
+    });
+    return;
+  }
   if (m.type === "query") {
     const t0 = performance.now();
     const r =

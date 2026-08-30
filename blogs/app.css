@@ -531,6 +531,87 @@ body {
     right: 7.4rem;
 }
 
+/* Blog rows carry two actions (subscribe, open). Position the group, let flex
+   size the members, so neither depends on the other's text width. */
+.row-actions {
+    position: absolute;
+    right: 0.55rem;
+    bottom: 0.55rem;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+.row-actions .hn-link {
+    position: static;
+}
+
+/* Subscribing is the point of finding a blog, so this one is always visible
+   rather than revealed on hover like the secondary links. */
+.feed-link {
+    position: static;
+    opacity: 1;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    color: var(--accent-text);
+    border-color: var(--chip-border);
+}
+.feed-link:hover {
+    border-color: var(--accent);
+}
+.pin .feed-link {
+    padding: 0.05rem 0.5rem;
+}
+
+/* A floating action pill only works while there is empty gutter to float into.
+   At phone width the meta line runs the full row, so an absolutely-positioned
+   RSS or "HN discussion" link lands on top of the topic tags -- and on touch,
+   where the hover reveal never fires, it sits there permanently. Below 560px
+   the actions flow after the row instead of over it. */
+@media (max-width: 560px) {
+    .results > li .hn-link,
+    .row-actions {
+        position: static;
+        opacity: 1;
+    }
+    .row-actions {
+        margin: 0.3rem 0 0.1rem;
+    }
+    .results > li > .hn-link {
+        display: inline-flex;
+        margin: 0.3rem 0.3rem 0.1rem 0;
+    }
+}
+
+/* --- OPML export --- */
+.opml {
+    font-family: inherit;
+    font-size: 0.78rem;
+    color: var(--accent-text);
+    background: none;
+    border: 1px solid var(--chip-border);
+    border-radius: 999px;
+    padding: 0.05rem 0.6rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.opml:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--chip-bg);
+}
+.opml:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.notice {
+    margin: 0.2rem 0 0.4rem;
+    font-size: 0.82rem;
+    color: var(--secondary-text);
+    border-left: 2px solid var(--accent);
+    padding-left: 0.5rem;
+}
+
 /* --- Empty / no-results --- */
 .empty {
     padding: 1.2rem 0;

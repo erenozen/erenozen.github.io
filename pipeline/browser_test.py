@@ -324,6 +324,79 @@ def main():
         check(mismatch == 0, "dead tag and archive link always travel together",
               f"{mismatch} mismatched rows")
 
+        # --- date range ---
+        page.goto(base, wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        all_total = page.evaluate("() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
+        page.click('[data-since="1"]')
+        page.wait_for_timeout(500)
+        yr_total = page.evaluate("() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
+        check(0 < yr_total < all_total, "Past year narrows the corpus",
+              f"{all_total:,} -> {yr_total:,}")
+        import datetime
+        cutoff = datetime.datetime.utcnow().year - 1
+        years = page.evaluate(
+            "() => [...document.querySelectorAll('#results .r-year')].map(e => +e.textContent)")
+        check(years and min(years) >= cutoff, "Past year rows are actually recent",
+              f"oldest shown {min(years) if years else 'n/a'}")
+
+        # --- hide dead links ---
+        page.goto(base + "?sort=oldest", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        before = page.locator(".r-dead").count()
+        page.check("#hide-dead")
+        page.wait_for_timeout(500)
+        after = page.locator(".r-dead").count()
+        check(before > 0 and after == 0, "hiding dead links removes every flagged row",
+              f"{before} -> {after}")
+        check("dead=0" in page.url, "dead-link filter survives in the URL", page.url)
+
+        # --- subscribe ---
+        page.goto(base + "?mode=blogs", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        n_rss = page.locator("#results a.feed-link").count()
+        check(n_rss > 0, "blog rows offer a subscribe link", f"{n_rss} of 40 rows")
+        href = page.locator("#results a.feed-link").first.get_attribute("href")
+        check((href or "").startswith("http"), "subscribe link is an absolute feed URL", href or "")
+        check(not page.locator("#opml").is_hidden(), "OPML export offered in blogs mode")
+
+        # The action group must not overlap: two absolutely-positioned links
+        # would, because "5 posts" and "1,284 posts" are different widths.
+        overlap = page.evaluate("""() => {
+            let bad = 0;
+            for (const g of document.querySelectorAll('.row-actions')) {
+                const ks = [...g.children].map(c => c.getBoundingClientRect());
+                for (let i = 1; i < ks.length; i++)
+                    if (ks[i].left < ks[i-1].right - 0.5) bad++;
+            }
+            return bad;
+        }""")
+        check(overlap == 0, "row actions never overlap", f"{overlap} overlapping pairs")
+
+        with page.expect_download(timeout=20000) as dl:
+            page.click("#opml")
+        path = dl.value.path()
+        opml = Path(path).read_text(encoding="utf-8")
+        n_out = opml.count("<outline ")
+        check(opml.startswith("<?xml"), "OPML export downloads a real XML file")
+        check(n_out > 50, "OPML carries the whole filtered blogroll, not the page",
+              f"{n_out} feeds (page showed 40)")
+        check('xmlUrl="http' in opml, "OPML outlines carry xmlUrl")
+        try:
+            import xml.etree.ElementTree as ET
+            ET.fromstring(opml)
+            check(True, "OPML parses as well-formed XML")
+        except Exception as exc:
+            check(False, "OPML parses as well-formed XML", str(exc)[:60])
+
+        page.goto(base, wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        check(page.locator("#opml").is_hidden(), "OPML export hidden in posts mode")
+
         # --- mobile ---
         page.set_viewport_size({"width": 390, "height": 844})
         page.wait_for_timeout(400)
@@ -342,6 +415,32 @@ def main():
             "() => [...document.querySelectorAll('#results > li')].filter(e => e.getBoundingClientRect().top < 640).length")
         check(top < 480, "first result is reachable on a 360x640 phone", f"y={top:.0f}px")
         check(visible >= 1, "at least one result in the opening viewport", f"{visible} rows")
+        # An absolutely-positioned action pill has empty gutter to float into
+        # only while the row is wide. On a phone it landed on top of the topic
+        # tags -- and on touch, where the hover reveal never fires, it stayed
+        # there. Assert no action link overlaps row content at phone width.
+        for url in ("?mode=blogs", "?sort=oldest"):
+            page.goto(base + url, wait_until="load")
+            page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+            page.wait_for_selector("#results > li", timeout=20000)
+            page.wait_for_timeout(300)
+            clash = page.evaluate("""() => {
+                const hit = (a, b) => a.left < b.right && b.left < a.right &&
+                                      a.top < b.bottom && b.top < a.bottom;
+                let bad = [];
+                for (const li of document.querySelectorAll('#results > li')) {
+                    const acts = [...li.querySelectorAll('.hn-link')];
+                    const content = [...li.querySelectorAll('.r-title, .r-desc, .r-meta > *')];
+                    for (const a of acts)
+                        for (const c of content)
+                            if (hit(a.getBoundingClientRect(), c.getBoundingClientRect()))
+                                bad.push(a.textContent.trim() + ' over ' + c.textContent.trim());
+                }
+                return bad;
+            }""")
+            check(not clash, f"actions clear row content on a phone ({url})",
+                  (clash[0] if clash else "none")[:60])
+
         page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/mobile.png")
 
         browser.close()

@@ -10,6 +10,7 @@ const el = (tag, cls, text) => {
 };
 
 const PAGE = 40;
+const DAY0 = Date.UTC(2006, 0, 1) / 86400000;  // matches search-worker.js
 const state = {
   q: "",
   mode: "posts",
@@ -17,6 +18,8 @@ const state = {
   topics: new Set(),
   kinds: new Set(),
   hideNews: true,
+  since: 0,          // years back; 0 = any time
+  hideDead: false,
   blog: -1,
   limit: PAGE,
   seq: 0,
@@ -45,6 +48,8 @@ worker.onmessage = (e) => {
   } else if (m.type === "paths-ready") {
     // Re-run the current query so rows pick up their exact article URLs.
     if (state.ready) run(true);
+  } else if (m.type === "export") {
+    downloadOPML(m.rows, m.total);
   } else if (m.type === "error") {
     $("#tagline").textContent = "Index failed to load — " + m.message;
     const status = $("#status");
@@ -124,11 +129,23 @@ function filters() {
   for (const i of state.topics) topicMask |= 1 << i;
   let kindMask = 0;
   for (const i of state.kinds) kindMask |= 1 << i;
+  // The worker stores dates as day offsets from 2006-01-01, so convert once
+  // here rather than per post inside the filter loop.
+  let sinceDay = 0, sinceYear = 0;
+  if (state.since) {
+    const cut = new Date();
+    cut.setUTCFullYear(cut.getUTCFullYear() - state.since);
+    sinceDay = Math.floor(cut.getTime() / 86400000) - DAY0;
+    sinceYear = cut.getUTCFullYear();
+  }
   return {
     topicMask,
     kindMask,
     blogId: state.blog,
     hideNews: state.hideNews,
+    sinceDay,
+    sinceYear,
+    hideDead: state.hideDead,
     hiddenSourceMask: state.meta ? state.meta.hidden_source_mask : 0,
   };
 }
@@ -202,7 +219,7 @@ function render(m) {
   const status = $("#status");
   const anyFilter =
     state.topics.size || state.kinds.size || !state.hideNews ||
-    state.q.trim() || state.blog >= 0;
+    state.since || state.hideDead || state.q.trim() || state.blog >= 0;
   $("#reset").hidden = !anyFilter;
 
   if (!m.rows.length) {
@@ -217,6 +234,7 @@ function render(m) {
     $("#status-ms").textContent = "";
     list.appendChild(noResults());
     $("#more").hidden = true;
+    $("#opml").hidden = true;
     selectRow(-1);
     return;
   }
@@ -243,6 +261,7 @@ function render(m) {
   }
   list.appendChild(frag);
   $("#more").hidden = m.rows.length >= m.total;
+  $("#opml").hidden = mode !== "blogs";
   if (pendingFocusRow >= 0) {
     selectRow(Math.min(pendingFocusRow, m.rows.length - 1));
     pendingFocusRow = -1;
@@ -349,11 +368,29 @@ function blogRow(r) {
   a.appendChild(meta);
   li.appendChild(a);
 
+  // A flex container rather than two absolutely-positioned links: "5 posts →"
+  // and "1,284 posts →" are very different widths, so any fixed right offset
+  // for a second link would overlap on some rows and float on others.
+  const acts = el("div", "row-actions");
+  if (r.f) acts.appendChild(feedLink(r.f, r.n));
   const open = el("button", "hn-link blog-open", `${r.c} posts →`);
   open.title = `Show ${r.n}'s posts`;
   open.addEventListener("click", () => pinBlog(r.i));
-  li.appendChild(open);
+  acts.appendChild(open);
+  li.appendChild(acts);
   return li;
+}
+
+/* Finding a blog worth reading and then having no way to follow it was the
+ * gap this closes. Only ~60% of indexed blogs expose a discoverable feed, so
+ * the link is conditional rather than a dead affordance on every row. */
+function feedLink(href, name) {
+  const a = el("a", "hn-link feed-link", "RSS");
+  a.href = href;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.title = `Subscribe to ${name}`;
+  return a;
 }
 
 function pinBlog(idx) {
@@ -388,6 +425,7 @@ function renderPin() {
   name.rel = "noopener noreferrer";
   host.appendChild(name);
   if (b.o) host.appendChild(el("span", "pin-desc", b.o));
+  if (b.f) host.appendChild(feedLink(b.f, b.n));
   const clear = el("button", "pin-clear", "✕ all blogs");
   clear.addEventListener("click", () => {
     state.blog = -1;
@@ -502,23 +540,130 @@ document.querySelectorAll(".mode-switch button").forEach((b) => {
   });
 });
 
-document.querySelectorAll(".sort-switch button").forEach((b) => {
-  b.addEventListener("click", () => {
-    document
-      .querySelectorAll(".sort-switch button")
-      .forEach((x) => x.classList.remove("active"));
-    b.classList.add("active");
-    state.sort = b.dataset.sort;
-    state.limit = PAGE;
-    run(true);
+// Keyed on the data attribute, not the class: Since reuses .sort-switch for
+// its looks, and a class-scoped handler would clear Sort's active state and
+// set state.sort to undefined on every Since click.
+function segGroup(attr, apply) {
+  const btns = [...document.querySelectorAll(`[data-${attr}]`)];
+  btns.forEach((b) => {
+    b.addEventListener("click", () => {
+      btns.forEach((x) => x.classList.remove("active"));
+      b.classList.add("active");
+      apply(b.dataset[attr]);
+      state.limit = PAGE;
+      run(true);
+    });
   });
-});
+}
+segGroup("sort", (v) => (state.sort = v));
+segGroup("since", (v) => (state.since = +v));
 
 $("#hide-news").addEventListener("change", (e) => {
   state.hideNews = e.target.checked;
   state.limit = PAGE;
   run(true);
 });
+
+$("#hide-dead").addEventListener("change", (e) => {
+  state.hideDead = e.target.checked;
+  state.limit = PAGE;
+  run(true);
+});
+
+/* ---------- OPML export ---------- */
+
+const OPML_CAP = 300;
+
+$("#opml").addEventListener("click", () => {
+  const btn = $("#opml");
+  btn.disabled = true;
+  btn.textContent = "Building…";
+  worker.postMessage({
+    type: "export",
+    q: state.q.trim(),
+    filters: filters(),
+    cap: OPML_CAP,
+  });
+});
+
+const xmlEsc = (v) =>
+  String(v || "").replace(/[<>&"']/g, (c) =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[c],
+  );
+
+function downloadOPML(rows, total) {
+  const btn = $("#opml");
+  btn.disabled = false;
+  btn.textContent = opmlLabel();
+  if (!rows.length) {
+    setNotice("None of the matching blogs expose a discoverable feed.");
+    return;
+  }
+  const names = [...state.topics].map((i) => state.meta.topics[i].name);
+  const title =
+    "Programming blogs" +
+    (names.length ? " — " + names.join(", ") : "") +
+    (state.q.trim() ? ` — “${state.q.trim()}”` : "");
+  const body = rows
+    .map(
+      (b) =>
+        `    <outline type="rss" text="${xmlEsc(b.n)}" title="${xmlEsc(b.n)}"` +
+        ` description="${xmlEsc(b.o)}"` +
+        ` xmlUrl="${xmlEsc(b.f)}" htmlUrl="${xmlEsc(b.h)}"/>`,
+    )
+    .join("\n");
+  const opml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<opml version="2.0">\n  <head>\n' +
+    `    <title>${xmlEsc(title)}</title>\n` +
+    `    <dateCreated>${new Date().toUTCString()}</dateCreated>\n` +
+    "    <ownerName>erenozen.dev/blogs</ownerName>\n" +
+    "  </head>\n  <body>\n" +
+    body +
+    "\n  </body>\n</opml>\n";
+
+  const url = URL.createObjectURL(new Blob([opml], { type: "text/x-opml" }));
+  const a = el("a");
+  a.href = url;
+  a.download =
+    "blogs-" +
+    (names.length ? names.join("-").toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" : "") +
+    new Date().toISOString().slice(0, 10) +
+    ".opml";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoking immediately can cancel the download in some browsers.
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+  setNotice(
+    total > rows.length
+      ? `Exported the top ${rows.length} of ${total.toLocaleString()} matching blogs with feeds.`
+      : `Exported ${rows.length} blog${rows.length === 1 ? "" : "s"}. Import it in any feed reader.`,
+  );
+}
+
+function opmlLabel() {
+  return "Export as OPML";
+}
+
+/* A transient line under the results. Not the aria-live status region: that one
+ * belongs to the result count, and overwriting it would make the next search
+ * announce a stale sentence about an export. */
+let noticeTimer = null;
+function setNotice(text) {
+  let n = $("#notice");
+  if (!n) {
+    n = el("div", "notice");
+    n.id = "notice";
+    n.setAttribute("role", "status");
+    $("#results").before(n);
+  }
+  n.textContent = text;
+  n.hidden = false;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => (n.hidden = true), 8000);
+}
 
 $("#more").addEventListener("click", () => {
   // The button hides itself once everything is shown, dropping focus to <body>
@@ -537,17 +682,30 @@ $("#reset").addEventListener("click", () => {
   state.kinds.clear();
   state.blog = -1;
   state.sort = "relevance";
-  document.querySelectorAll(".sort-switch button").forEach((x) =>
-    x.classList.toggle("active", x.dataset.sort === "relevance"),
-  );
+  state.since = 0;
+  state.hideDead = false;
+  syncSegs();
   state.hideNews = true;
   state.q = "";
   $("#q").value = "";
   $("#hide-news").checked = true;
+  $("#hide-dead").checked = false;
   document.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", "false"));
   state.limit = PAGE;
   run(true);
 });
+
+/* Reflect state back onto both segmented controls. Used by reset and by URL
+ * restore, which otherwise leave the buttons showing the previous selection
+ * while the results follow the new one. */
+function syncSegs() {
+  document.querySelectorAll("[data-sort]").forEach((b) =>
+    b.classList.toggle("active", b.dataset.sort === state.sort),
+  );
+  document.querySelectorAll("[data-since]").forEach((b) =>
+    b.classList.toggle("active", +b.dataset.since === state.since),
+  );
+}
 
 /* ---------- URL state ---------- */
 
@@ -559,6 +717,8 @@ function writeURL() {
   if (state.topics.size) p.set("t", [...state.topics].join(","));
   if (state.kinds.size) p.set("k", [...state.kinds].join(","));
   if (!state.hideNews) p.set("news", "1");
+  if (state.since) p.set("since", String(state.since));
+  if (state.hideDead) p.set("dead", "0");
   if (state.blog >= 0 && state.blogs[state.blog]) p.set("b", state.blogs[state.blog].n);
   const s = p.toString();
   history.replaceState(null, "", s ? "?" + s : location.pathname);
@@ -572,11 +732,12 @@ function readURL() {
   state.sort = ["points", "date", "oldest"].includes(sortParam)
     ? sortParam
     : "relevance";
-  document.querySelectorAll(".sort-switch button").forEach((b) => {
-    b.classList.toggle("active", b.dataset.sort === state.sort);
-  });
+  state.since = [1, 3, 8].includes(+p.get("since")) ? +p.get("since") : 0;
+  syncSegs();
   state.hideNews = p.get("news") !== "1";
   $("#hide-news").checked = state.hideNews;
+  state.hideDead = p.get("dead") === "0";
+  $("#hide-dead").checked = state.hideDead;
   document.querySelectorAll(".mode-switch button").forEach((b) => {
     b.classList.toggle("active", b.dataset.mode === state.mode);
   });

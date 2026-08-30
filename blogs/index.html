@@ -55,11 +55,20 @@
 
             <div class="filters">
                 <details class="filter-disclosure" id="topic-wrap" open>
-                    <summary>Topics &amp; kind</summary>
+                    <summary>Topics, kind &amp; date</summary>
                     <div class="filter-row" id="topics" aria-label="Filter by topic"></div>
                     <div class="filter-row secondary kind-row">
                         <span class="sort-label">Kind</span>
                         <div class="filter-row inline" id="kinds"></div>
+                    </div>
+                    <div class="filter-row secondary kind-row">
+                        <span class="sort-label">Since</span>
+                        <div class="sort-switch since-switch" role="group" aria-label="Publication date">
+                            <button data-since="0" class="active">Any time</button>
+                            <button data-since="1">Past year</button>
+                            <button data-since="3">Past 3 years</button>
+                            <button data-since="8">Since 2018</button>
+                        </div>
                     </div>
                 </details>
                 <div class="filter-row secondary">
@@ -74,6 +83,13 @@
                     <label class="toggle">
                         <input type="checkbox" id="hide-news" checked />
                         <span>Hide newsrooms</span>
+                    </label>
+                    <label class="toggle" id="dead-toggle">
+                        <input type="checkbox" id="hide-dead" />
+                        <span
+                            title="12% of indexed URLs no longer respond, almost all of them pre-2015"
+                            >Hide dead links</span
+                        >
                     </label>
                 </div>
                 <div class="filter-row secondary">
@@ -94,6 +110,7 @@
             <div class="pin" id="pin" hidden></div>
             <div class="status-row">
                 <div class="status" id="status" aria-live="polite" aria-atomic="true"></div>
+                <button id="opml" class="opml" hidden>Export as OPML</button>
                 <span class="status-ms" id="status-ms"></span>
             </div>
             <ol class="results" id="results"></ol>

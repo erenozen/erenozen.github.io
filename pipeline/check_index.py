@@ -7,7 +7,7 @@ and search would still return rows; they would just be the wrong rows, or point
 at the wrong URLs. A column that is off by one is invisible until a user clicks a
 result and lands on an unrelated post.
 """
-import json, os, struct, sys
+import json, os, re, struct, sys
 
 # Recall canaries. The platform-hosted entries are deliberate: substack and
 # wordpress blogs were once dropped entirely (a substack URL is
@@ -51,6 +51,15 @@ def main():
     check(len(titles) == n, f"titles.txt lines == n_posts ({len(titles)} vs {n})")
     check(len(paths) == n, f"paths.txt lines == n_posts ({len(paths)} vs {n})")
     check(all(t.strip() for t in titles), "no empty titles")
+
+    # Titles render through textContent, so an undecoded entity is shown to the
+    # reader verbatim: "Embellishing the donut&#58;", "A story about &lt;input&gt;".
+    # Both HN and feed titles arrive encoded, so this has to be decoded at build.
+    ENT = re.compile(r"&(#[0-9]{2,5}|#x[0-9a-fA-F]{2,4}|"
+                     r"lt|gt|amp|quot|apos|nbsp|mdash|ndash|hellip|[lr][sd]quo);")
+    enc = [t for t in titles if ENT.search(t)]
+    check(not enc, "titles are entity-decoded" +
+          (f" ({len(enc)} still encoded, e.g. {enc[0][:40]!r})" if enc else ""))
 
     size = os.path.getsize(os.path.join(d, "posts.bin"))
     check(size == n * 16, f"posts.bin is n*16 bytes ({size} vs {n*16})")

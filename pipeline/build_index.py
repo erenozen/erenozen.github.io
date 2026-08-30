@@ -15,7 +15,7 @@ posts.bin (little-endian, n = meta.n_posts), in this exact order:
     score      Uint8Array(n)    baked rank, 0-255
     hnId       Uint32Array(n)   HN objectID -> news.ycombinator.com/item?id=
 """
-import json, math, os, re, struct, sys, time
+import html, json, math, os, re, struct, sys, time
 from collections import defaultdict
 from urllib.parse import urlparse
 
@@ -229,6 +229,32 @@ def main():
             "q": round(blog_quality(st["median_points"], st["n_stories"]), 3),
         })
 
+    # ---- feed URLs ----
+    #
+    # Carried into blogs.json so the UI can offer a subscribe link and an OPML
+    # export. This is a separate pass from feed-post ingestion below, which
+    # skips blogs whose entries are unusable -- a blog can have a perfectly good
+    # feed to subscribe to while contributing no posts to the index. Forum hosts
+    # are excluded: a thread firehose is not something to hand a feed reader.
+    if feeds_path and os.path.exists(feeds_path):
+        by_key = {}
+        for line in open(feeds_path):
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            u = r.get("feed")
+            if u and not FORUM_HOST.search((r.get("key") or "").split("/")[0]):
+                by_key[r["key"]] = u
+        n_feedurl = 0
+        for b in blogs_json:
+            u = by_key.get(b["n"])
+            if u:
+                b["f"] = u
+                n_feedurl += 1
+        print(f"feed URLs attached: {n_feedurl:,} of {len(blogs_json):,} blogs "
+              f"({100*n_feedurl/max(len(blogs_json),1):.0f}%)")
+
     # ---- posts ----
     import sys as _s
     _s.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -248,7 +274,7 @@ def main():
             continue
         key = k[0]
 
-        title = s["title"].replace("\n", " ").replace("\r", " ").strip()
+        title = html.unescape(s["title"]).replace("\n", " ").replace("\r", " ").strip()
         if not title:
             continue
         try:
@@ -361,7 +387,7 @@ def main():
             for ts, e in ents:
                 if taken >= cap:
                     break
-                title = (e.get("title") or "").replace("\n", " ").strip()
+                title = html.unescape(e.get("title") or "").replace("\n", " ").strip()
                 if not title or REPLY_TITLE.search(title):   # search, not match: the
                     # commit marker "(tags: trunk)" sits at the END of the title
                     continue
