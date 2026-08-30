@@ -399,6 +399,14 @@ def main():
         # --- date range ---
         page.goto(base, wait_until="load")
         page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        import datetime as _dt
+        want = f"Since {_dt.datetime.utcnow().year - 8}"
+        got = page.locator('[data-since="8"]').inner_text().strip()
+        check(got == want, "the relative date label names the right year",
+              f"{got!r} vs {want!r}")
+
+        page.goto(base, wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
         page.wait_for_selector("#results > li", timeout=20000)
         all_total = page.evaluate("() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
         page.click('[data-since="1"]')

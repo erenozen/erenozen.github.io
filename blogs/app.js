@@ -106,6 +106,12 @@ function onIndexReady() {
   }
   buildChips($("#kinds"), m.kinds, state.kinds, "kind");
 
+  // The longest date filter is relative (8 years back), so its label has to be
+  // computed. Shipped as "Since 2018", which would have quietly meant "since
+  // 2019" every January while still saying 2018.
+  const far = document.querySelector('[data-since="8"]');
+  if (far) far.textContent = "Since " + (new Date().getUTCFullYear() - 8);
+
   document.querySelectorAll("#suggests button").forEach((b) => {
     b.addEventListener("click", () => {
       state.q = b.dataset.q;
