@@ -29,6 +29,7 @@ by an LLM, and the UI hides `newsroom`/`vendor`/`institution` behind one toggle.
 | 7 | `build_index.py` | → `blogs/data/*` |
 | 8 | `check_index.py` | fails CI if the index is inconsistent |
 | 9 | `sync_counts.py` | rewrites the corpus size quoted in prose on two pages |
+| 10 | `update_feed_urls.py` | merges this run's discoveries back into `feed_urls.tsv` |
 
 `select_for_feeds.py` limits stage 4 to blogs that survived classification, so we
 never crawl candidates that were never going to be indexed.
@@ -39,6 +40,21 @@ takes as an optional last argument. 12% of the corpus no longer resolves, decayi
 from 32% of 2009 posts to 4% of 2025. Far too slow for CI, so the distilled list
 is committed and replayed; link rot only goes one way, so replaying is accurate
 between crawls.
+
+`feed_urls.tsv` is what makes stage 4 affordable. It records, per blog, either
+the resolved feed URL or `-` for "discovery found nothing". The negatives are
+the point: a blog whose HTML advertises a feed resolves in one request, while a
+blog with no feed costs 14 that all time out -- and 4,350 of 10,622 known blogs
+have no feed. Measured, the same 200 feedless blogs went from *not finishing in
+ten minutes* to 0.16 seconds. Re-deriving that answer monthly is what made a
+full pass take four hours. Regenerate with `SKIP_NEGATIVE=0` to pick up blogs
+that have since added a feed.
+
+`search_eval.py` measures recall against ground truth the search did not
+produce: for a query, every title literally containing all its terms, versus
+what the worker actually returns. A miss only counts when the page was not
+full. It caught "writing a compiler" returning 34 rows of a 40-row page while
+38 titles matched.
 
 `browser_test.py` drives the built site in headless Chrome. Everything else here
 reasons about code that was never rendered; this is what catches an action pill
@@ -67,6 +83,20 @@ Algolia API, because a permutation bug here is otherwise invisible.
 
 `topicMask` also carries flags: bit 13 feed-sourced, bit 14 kind-came-from-a-rule,
 bit 15 link-is-dead.
+
+`meta.json` also records `n_feed_urls` and `n_feed_posts`, purely so the next
+build can be compared against this one. Every other check asks whether the index
+is internally consistent, and a much smaller index is perfectly consistent: a
+cold feed cache builds a valid index with 17.9% fewer posts, and the checks used
+to wave it through. Pass the previous `meta.json` as a second argument to
+`check_index.py` to enforce that.
+
+## CI
+
+Two workflows. `refresh-blog-index.yml` rebuilds monthly (and on demand);
+`test.yml` runs the index checks, the search eval and the browser suite on every
+push that touches `blogs/` or `pipeline/` -- including the refresh bot's own
+commits, so a bad index meets the same checks as a bad edit.
 
 ## Classification is deliberately out of band
 
@@ -100,6 +130,7 @@ FEED_CAP=12 .venv/bin/python pipeline/build_index.py \
     work/feeds.jsonl pipeline/dead_urls.txt
 .venv/bin/python pipeline/check_index.py blogs/data
 .venv/bin/python pipeline/sync_counts.py
+.venv/bin/python pipeline/search_eval.py                     # needs playwright + chrome
 .venv/bin/python pipeline/browser_test.py                    # needs playwright + chrome
 ```
 
