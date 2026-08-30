@@ -27,6 +27,9 @@ const state = {
   meta: null,
   blogs: [],
   ready: false,
+  loadingCorpus: true,
+  loaded: 0,
+  nPosts: 0,
 };
 
 const worker = new Worker("search-worker.js");
@@ -45,8 +48,22 @@ worker.onmessage = (e) => {
     if (m.seq < state.lastSeq) return; // a newer query already landed
     state.lastSeq = m.seq;
     render(m);
-  } else if (m.type === "paths-ready") {
-    // Re-run the current query so rows pick up their exact article URLs.
+  } else if (m.type === "progress") {
+    // The corpus is still arriving in score order, so the current answer is a
+    // true prefix of the final one. Re-run so it fills in, and say so: a count
+    // that climbs on its own is otherwise indistinguishable from a bug.
+    state.loaded = m.loaded;
+    state.nPosts = m.total;
+    showLoadNote();
+    if (state.ready) run(true);
+  } else if (m.type === "titles-complete") {
+    state.loaded = m.loaded;
+    state.nPosts = m.total;
+    state.loadingCorpus = false;
+    showLoadNote();
+    if (state.ready) run(true);
+  } else if (m.type === "paths-ready" || m.type === "hn-ready") {
+    // Re-run so rows pick up their exact article URL, then their HN thread.
     if (state.ready) run(true);
   } else if (m.type === "export") {
     downloadOPML(m.rows, m.total);
@@ -103,6 +120,19 @@ function onIndexReady() {
   q.value = state.q;
   q.focus();
   run();
+}
+
+/* Outside the aria-live status region on purpose: this ticks several times a
+ * second while the corpus streams in, and announcing each tick would bury the
+ * result count a screen-reader user actually asked for. */
+function showLoadNote() {
+  const n = $("#load-note");
+  if (!state.loadingCorpus || state.loaded >= state.nPosts) {
+    n.hidden = true;
+    return;
+  }
+  n.hidden = false;
+  n.textContent = `loading ${Math.round((100 * state.loaded) / state.nPosts)}% of the corpus`;
 }
 
 function buildChips(host, items, set, kind) {

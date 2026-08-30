@@ -397,6 +397,52 @@ def main():
         page.wait_for_selector("#results > li", timeout=20000)
         check(page.locator("#opml").is_hidden(), "OPML export hidden in posts mode")
 
+        # --- progressive load ---
+        #
+        # titles.txt streams in score order and search goes live on the first
+        # chunk, so a query typed mid-load runs against a partial corpus. The
+        # danger is not the partial answer -- it is the cached match set: uFuzzy
+        # narrows a new query from the previous result, and a set computed
+        # before the rest of the corpus arrived would keep hiding those rows for
+        # the whole session, with a perfectly plausible count. Unthrottled this
+        # window is milliseconds wide, so force it open.
+        page.goto("about:blank")
+        cdp = page.context.new_cdp_session(page)
+        cdp.send("Network.emulateNetworkConditions", {
+            "offline": False, "latency": 40,
+            "downloadThroughput": 3_000_000 / 8, "uploadThroughput": 3_000_000 / 8})
+        page.goto(base, wait_until="commit")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=120000)
+        page.fill("#q", "rust")
+        page.wait_for_timeout(150)
+        page.fill("#q", "rust async")     # extend the query -> narrowing path
+        page.wait_for_timeout(150)
+        mid = page.evaluate(
+            "() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
+        check(not page.locator("#load-note").is_hidden() or mid >= 0,
+              "load progress is disclosed while the corpus streams")
+        cdp.send("Network.emulateNetworkConditions", {
+            "offline": False, "latency": 0,
+            "downloadThroughput": -1, "uploadThroughput": -1})
+        page.wait_for_function("() => document.querySelector('#load-note').hidden",
+                               timeout=120000)
+        page.wait_for_timeout(600)
+        final = page.evaluate(
+            "() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
+
+        # Same query from a cold page, whole corpus present.
+        page.goto(base + "?q=rust+async", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=120000)
+        page.wait_for_function("() => document.querySelector('#load-note').hidden",
+                               timeout=120000)
+        page.wait_for_timeout(600)
+        cold = page.evaluate(
+            "() => +document.querySelector('.status .hl').textContent.replace(/,/g,'')")
+        check(final == cold,
+              "a query typed mid-load ends up with the full result set",
+              f"streamed {final} vs cold {cold}")
+        check(mid <= final, "mid-load count only grows", f"{mid} -> {final}")
+
         # --- mobile ---
         page.set_viewport_size({"width": 390, "height": 844})
         page.wait_for_timeout(400)

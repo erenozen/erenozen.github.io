@@ -604,6 +604,14 @@ body {
     cursor: default;
 }
 
+.load-note {
+    font-size: 0.78rem;
+    color: var(--secondary-text);
+    font-family: "Ubuntu Mono", monospace;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
 .notice {
     margin: 0.2rem 0 0.4rem;
     font-size: 0.82rem;

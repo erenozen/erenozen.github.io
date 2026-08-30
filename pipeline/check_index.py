@@ -27,6 +27,26 @@ FAMOUS = [
 #                               pipeline turned out to be right.
 #   astralcodexten.substack.com -- society, is_programming_blog=false.
 
+# Golden (HN item id -> title) pairs, verified against the live Algolia API.
+# The index is four files that must agree row-for-row: titles.txt, paths.txt,
+# posts.bin and hn.bin. Nothing inside the index can detect a permutation bug
+# between them -- every file stays individually well-formed, every count still
+# matches, and the UI happily renders a real title next to another post's HN
+# thread and a third post's URL. These pairs are the outside reference.
+# build_index.py now reorders every column by score, which is exactly the kind
+# of change that breaks this silently.
+GOLDEN = {
+    34170379: "A day in the life of almost every vending machine",
+    14172253: "The U.S. wind industry now employs more than 100K people",
+    22061174: "Quindar Tones: the beeps heard in recordings of astronauts in space",
+    28371203: "My House",
+    5638914: "How I write SQL",
+    10163075: "Safe from what?",
+    43513967: "How IMAP works under the hood",
+    27421202: "Jeff Bezos will fly on the first passenger spaceflight of Blue Origin in July",
+}
+
+
 def main():
     d = sys.argv[1]
     fail = []
@@ -62,15 +82,19 @@ def main():
           (f" ({len(enc)} still encoded, e.g. {enc[0][:40]!r})" if enc else ""))
 
     size = os.path.getsize(os.path.join(d, "posts.bin"))
-    check(size == n * 16, f"posts.bin is n*16 bytes ({size} vs {n*16})")
+    check(size == n * 12, f"posts.bin is n*12 bytes ({size} vs {n*12})")
+    hsize = os.path.getsize(os.path.join(d, "hn.bin"))
+    check(hsize == n * 4, f"hn.bin is n*4 bytes ({hsize} vs {n*4})")
 
     with open(os.path.join(d, "posts.bin"), "rb") as f:
         buf = f.read()
+    with open(os.path.join(d, "hn.bin"), "rb") as f:
+        hbuf = f.read()
     blog_ids = struct.unpack_from(f"<{n}I", buf, 0)
     pts = struct.unpack_from(f"<{n}H", buf, n * 4)
     tm = struct.unpack_from(f"<{n}H", buf, n * 8)
     ks = struct.unpack_from(f"<{n}B", buf, n * 10)
-    hn = struct.unpack_from(f"<{n}I", buf, n * 12)
+    hn = struct.unpack_from(f"<{n}I", hbuf, 0)
 
     check(max(blog_ids) < nb, f"all blogId in range (max {max(blog_ids)} < {nb})")
     # Feed-sourced posts carry no HN score, so the bar applies to HN posts only.
@@ -92,6 +116,15 @@ def main():
 
     missing_hn = sum(1 for h, t in zip(hn, tm) if h == 0 and not (t & (1 << 13)))
     check(missing_hn < n * 0.01, f"HN ids present on HN posts ({missing_hn} missing)")
+
+    pos = {h: i for i, h in enumerate(hn) if h}
+    bad = [f"{h} -> {titles[pos[h]]!r}" for h, t in GOLDEN.items()
+           if h in pos and titles[pos[h]] != t]
+    gone = [h for h in GOLDEN if h not in pos]
+    check(not bad, "hn.bin still lines up with titles.txt" +
+          (f" (mismatched: {bad[0]})" if bad else ""))
+    check(len(gone) <= 2, f"golden posts still indexed ({len(gone)} of "
+                          f"{len(GOLDEN)} missing)")
 
     names = {b["n"] for b in blogs}
     missing = [f for f in FAMOUS if f not in names]

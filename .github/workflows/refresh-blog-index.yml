@@ -98,11 +98,17 @@ jobs:
       - name: Sanity-check the built index
         run: python pipeline/check_index.py blogs/data
 
+      # The corpus size is quoted in prose on two pages. Left alone it drifts:
+      # the portfolio was still advertising 111k posts from 5,979 blogs after
+      # the index had grown to 165k and 10,535.
+      - name: Sync quoted corpus counts
+        run: python pipeline/sync_counts.py
+
       - name: Commit if changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add blogs/data
+          git add blogs/data blogs/index.html index.html
           if git diff --cached --quiet; then
             echo "index unchanged; nothing to commit"
           else

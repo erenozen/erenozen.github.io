@@ -443,6 +443,25 @@ def main():
         print(f"posts flagged dead: {n_dead:,} ({100*n_dead/max(n,1):.1f}%)")
     print(f"posts indexed: {n:,}")
 
+    # Order every column by descending baked score.
+    #
+    # This is what lets the worker stream titles.txt and search the part that
+    # has arrived: the first chunk off the wire is the highest-ranked slice of
+    # the corpus, not an arbitrary one, so early results are the ones a reader
+    # would have seen anyway. Time-to-searchable on a 9 Mbps connection goes
+    # from 5.4s to under 2s. Purely a permutation -- every column moves
+    # together, and nothing downstream may assume the old order.
+    perm = sorted(range(n), key=lambda i: -col_score[i])
+    titles = [titles[i] for i in perm]
+    paths = [paths[i] for i in perm]
+    col_blog = [col_blog[i] for i in perm]
+    col_pts = [col_pts[i] for i in perm]
+    col_day = [col_day[i] for i in perm]
+    col_tm = [col_tm[i] for i in perm]
+    col_ks = [col_ks[i] for i in perm]
+    col_score = [col_score[i] for i in perm]
+    col_hn = [col_hn[i] for i in perm]
+
     with open(os.path.join(outdir, "titles.txt"), "w") as f:
         f.write("\n".join(titles))
     with open(os.path.join(outdir, "paths.txt"), "w") as f:
@@ -454,6 +473,13 @@ def main():
         f.write(struct.pack(f"<{n}H", *col_tm))
         f.write(struct.pack(f"<{n}B", *col_ks))
         f.write(struct.pack(f"<{n}B", *col_score))
+    # HN item ids live in their own file. They are 0.42MB gzipped -- 35% of
+    # posts.bin -- and are used for exactly one thing: building the "HN
+    # discussion" href. Nothing ranks, filters or sorts by them, so making the
+    # first search wait on them was 35% of the binary payload spent on a link
+    # most readers never click. Deferred like paths.txt; until it lands the
+    # link is simply absent, which is safe in a way a wrong href would not be.
+    with open(os.path.join(outdir, "hn.bin"), "wb") as f:
         f.write(struct.pack(f"<{n}I", *col_hn))
     with open(os.path.join(outdir, "blogs.json"), "w") as f:
         json.dump(blogs_json, f, ensure_ascii=False, separators=(",", ":"))
@@ -470,7 +496,7 @@ def main():
             "kinds": [{"slug": s, "name": nm} for s, nm in KINDS],
         }, f, separators=(",", ":"))
 
-    for fn in ("titles.txt", "paths.txt", "posts.bin", "blogs.json", "meta.json"):
+    for fn in ("titles.txt", "paths.txt", "posts.bin", "hn.bin", "blogs.json", "meta.json"):
         sz = os.path.getsize(os.path.join(outdir, fn))
         print(f"  {fn:<12} {sz/1e6:7.2f} MB")
 
