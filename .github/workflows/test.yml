@@ -6,8 +6,11 @@ name: Test
 # all posts -- was caught by running these suites BY HAND. That is not a
 # safety net, that is a habit.
 #
-# This also runs on the refresh bot's own commits, so a bad index is caught
-# by the same checks that guard a bad edit.
+# This does NOT run on the refresh bot's commits. GitHub deliberately does not
+# trigger workflows for pushes made with GITHUB_TOKEN, to stop workflows looping
+# -- verified: the bot's commit fired only pages-build-deployment. That is why
+# refresh-blog-index.yml runs these same suites itself, before it commits. That
+# step is the only thing testing a refreshed index, not a second opinion.
 
 on:
   push:
