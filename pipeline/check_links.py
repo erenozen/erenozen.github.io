@@ -41,28 +41,43 @@ def load_index(d):
     return out
 
 
+def _probe(url, session):
+    """One request: HEAD, falling back to a ranged GET for servers that
+    mishandle HEAD. Returns (status, final_url); negative status on failure."""
+    try:
+        r = session.head(url, timeout=TIMEOUT, allow_redirects=True)
+        if r.status_code in (403, 405, 501) or r.status_code >= 500:
+            r = session.get(url, timeout=TIMEOUT, allow_redirects=True,
+                            stream=True, headers={"Range": "bytes=0-2048"})
+            r.close()
+        return r.status_code, r.url
+    except requests.exceptions.SSLError:
+        return -2, ""
+    except requests.exceptions.ConnectionError:
+        return -3, ""
+    except requests.exceptions.Timeout:
+        return -4, ""
+    except Exception:
+        return -1, ""
+
+
 def check_host(host, items, session):
     """Sequentially check every URL for one host."""
     res = []
     for idx, url in items:
-        status, final = 0, ""
-        try:
-            r = session.head(url, timeout=TIMEOUT, allow_redirects=True)
-            # Plenty of servers mishandle HEAD; retry those with a ranged GET
-            # rather than recording a false death.
-            if r.status_code in (403, 405, 501) or r.status_code >= 500:
-                r = session.get(url, timeout=TIMEOUT, allow_redirects=True,
-                                stream=True, headers={"Range": "bytes=0-2048"})
-                r.close()
-            status, final = r.status_code, r.url
-        except requests.exceptions.SSLError:
-            status = -2
-        except requests.exceptions.ConnectionError:
-            status = -3
-        except requests.exceptions.Timeout:
-            status = -4
-        except Exception:
-            status = -1
+        status, final = _probe(url, session)
+
+        # Blog keys are all built as https://, but plenty of 2007-era blogs only
+        # ever served plain HTTP. Without this retry an absent or expired
+        # certificate reads as "dead" -- measured at 12.6% of the corpus, and it
+        # wrongly condemned esr.ibiblio.org and aaronsw.com. A reader following
+        # the link reaches the page, so the checker should too.
+        if status in (-2, -3) and url.startswith("https://"):
+            time.sleep(PER_HOST_DELAY)
+            alt, alt_final = _probe("http://" + url[len("https://"):], session)
+            if alt > 0:
+                status, final = alt, alt_final
+
         res.append({"i": idx, "url": url, "status": status,
                     "final": final if final != url else ""})
         time.sleep(PER_HOST_DELAY)
@@ -78,18 +93,22 @@ def main():
     if os.path.exists(out_path):
         for line in open(out_path):
             try:
-                done.add(json.loads(line)["i"])
+                done.add(json.loads(line)["url"])
             except Exception:
                 pass
         print(f"resuming: {len(done)} already checked", flush=True)
 
-    posts = [p for p in load_index(d) if p[0] not in done]
+    posts = [p for p in load_index(d) if p[1] not in done]
     posts.sort(key=lambda p: p[2])          # oldest first
     if limit:
         posts = posts[:limit]
 
     by_host = defaultdict(list)
+    seen_url = set()
     for idx, url, _ in posts:
+        if url in seen_url:
+            continue
+        seen_url.add(url)
         by_host[urlparse(url).netloc.lower()].append((idx, url))
     print(f"{len(posts)} urls across {len(by_host)} hosts", flush=True)
 

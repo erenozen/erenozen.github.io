@@ -6207,7 +6207,7 @@
 /article/johnpaczkowski/apple-tim-cook-bloomberg-retraction
 /android-updates
 /2016/08/17/grokking-deep-learning
-/cloud/facebook-open-sources-its-servers-and-data-centers/ 
+/cloud/facebook-open-sources-its-servers-and-data-centers/
 /deltadb
 /blog/your-vs-my-in-user-interfaces
 /discover/blog/advanced-version-of-gemini-with-deep-think-officially-achieves-gold-medal-standard-at-the-international-mathematical-olympiad
@@ -16977,7 +16977,7 @@
 /blogs/worldviews/wp/2013/10/09/oops-azerbaijan-released-election-results-before-voting-had-even-started
 /2013/07/07/us/in-secret-court-vastly-broadens-powers-of-nsa.html
 /GPS/Main.htm
-/blogs/krulwich/2013/02/07/171370893/next-time-your-mom-says-don-t-go-out-in-the-rain-spray-yourself-with-this 
+/blogs/krulwich/2013/02/07/171370893/next-time-your-mom-says-don-t-go-out-in-the-rain-spray-yourself-with-this
 /2012/12/hbo-greenlights-live-action-comedy-pilot-from-mike-judge-king-of-the-hill-writers
 /posts/2012/11/14/engineers-suck-at-finding-right-jobs
 /2012/03/im-disappoint-github.html
@@ -20200,7 +20200,7 @@
 /blog/2012/11/syria-off-the-air.shtml
 /2012/jul-aug/06-vital-signs-woman-needed-upside-down
 /post/introducing-ccv-milestone
-/content/why-your-links-should-never-say-click-here/ 
+/content/why-your-links-should-never-say-click-here/
 /2012/05/engineering-culture-litmus-tests
 /8301-1009_3-57428067-83/fbi-we-need-wiretap-ready-web-sites-now
 /blog/2010/08/12/30-free-programming-ebooks
@@ -30167,7 +30167,7 @@
 /business/aerospace-defense/alaska-737-cockpit-voice-recorder-data-erasure-renews-industry-safety-debate-2024-01-08
 /p/yes-actually-means-no-the-curious
 /technology/apple-now-requires-judges-consent-hand-over-push-notification-data-2023-12-12
-/post/3339907908/the-cognitive-style-of-unix 
+/post/3339907908/the-cognitive-style-of-unix
 /archives/2023/11/13/i-accidentally-a-scheme
 /us-news/ng-interactive/2017/dec/20/bussed-out-america-moves-homeless-people-country-study
 /hw-hacking-lab/vss-lab-guide
@@ -30923,7 +30923,7 @@
 /2015/03/13/when-ie-gave-us-beautiful-fast-touch-interactions-and-nobody-cared
 /2015/02/amazon-radioshack
 /magazine/2014/11/10/better-time
-/2014/10/26/us/law-lets-irs-seize-accounts-on-suspicion-no-crime-required.html 
+/2014/10/26/us/law-lets-irs-seize-accounts-on-suspicion-no-crime-required.html
 /2014/10/21/magic-leap-tech
 /flow
 /2014/09/reverse-engineering-counterfeit-7805.html
@@ -39379,7 +39379,7 @@
 /felix-salmon/2014/04/21/the-most-expensive-lottery-ticket-in-the-world
 /blog/secure-your-domain-where-is-safe-to-register-a-domain-name
 /2014/02/27/apple-explains-exactly-how-secure-imessage-really-is
-/gz146.htm 
+/gz146.htm
 /2013/12/an-update-on-truecrypt.html
 /world/2013/dec/09/nsa-spies-online-games-world-warcraft-second-life
 /commentisfree/2013/dec/05/engineering-moral-effects-technology-impact
@@ -39922,7 +39922,7 @@
 /features/corporate-america-hasnt-been-disrupted
 /capnproto/news/2014-06-17-capnproto-flatbuffers-sbe.html
 /the-case-for-reactjs-and-clojurescript
-/83200/privacy-internet-big-data-opt-out/ 
+/83200/privacy-internet-big-data-opt-out/
 /list/helsinkis-personalized-bus-service-is-like-uber-for-public-transit
 /2014/03/the-new-php.html
 /blog/2014/03/02/windows_8_surface
@@ -39951,7 +39951,7 @@
 /2012/03/09/green-dot-acquires-location-based-services-pioneer-loopt-for-43-4-million-in-cash
 /2012/02/26/opinion/sunday/innovation-and-the-bell-labs-miracle.html
 /node/4531
-/2012/01/29/opinion/sunday/childrens-add-drugs-dont-work-long-term.html 
+/2012/01/29/opinion/sunday/childrens-add-drugs-dont-work-long-term.html
 /socialmedia/2012/01/12/reddit-user-ventures-to-the-daily-show-gets-jon-stewart-to-talk-sopa-on-air
 /blog/GoodUXInTheWildDropboxsAttentionToDetailOnTheirDownloadPage.aspx
 /software/blog/2011/10/why-not-haskell.html
@@ -58534,7 +58534,7 @@
 /blogs/the-switch/wp/2013/11/01/seattle-mayor-i-have-comcast-and-i-would-like-better-service
 /offline/docs/welcome
 /5886128/how-seinfelds-productivity-secret-fixed-my-procrastination-problem
-/Drug%20heuristics 
+/Drug%20heuristics
 /Google%20Alerts
 /good
 /news/magazine-23469438
@@ -59764,7 +59764,7 @@
 /gitlab-ce-6-dot-3-released
 /remote/workcanwait
 /blog/2013/10/25/mod-python-the-long-story
-/2013/10/firefox-developer-tools-and-firebug/ 
+/2013/10/firefox-developer-tools-and-firebug/
 /b/eternalcoding/archive/2013/06/27/babylon-js-a-complete-javascript-framework-for-building-3d-games-with-html-5-and-webgl.aspx
 /minimally-invasive-eye-surgery-on-the-horizon-as-magnetically-guided-microbots-move-toward-clinical-trials
 /the-dire-state-of-wordpress
@@ -61004,7 +61004,7 @@
 /posts/python-fuse-filesystem
 /blog/archives/2013/10/can_i_be_truste.html
 /beyond-flat
-/blog/2826/unusual-speed-boost-size-matters/ 
+/blog/2826/unusual-speed-boost-size-matters/
 /2013/5/15/memory-allocators-101.html
 /2013/04/12/light-table-survey-results
 /blog/2013/02/15/ember-1-0-rc
@@ -65371,7 +65371,7 @@
 /en-us/um/people/sumitg/pubs/mobisys13.mp4
 /2014/06/flatbuffers-memory-efficient.html
 /issue-13
-/archives/1154  
+/archives/1154
 /Lemon-a-statement-about-mahbods-annotations-on-elliot-rodgers-manifesto-annotated
 /haskellwiki/The_JavaScript_Problem
 /b/windowsserver/archive/2014/04/03/windows-management-framework-v5-preview.aspx
@@ -71473,7 +71473,7 @@
 /kim-dotcom-us-govt-is-protecting-an-outdated-monopolistic-business-model-120301
 /articles/20120127/16312617573/using-wikileaks-to-figure-out-what-government-redacts.shtml
 /blog/2011/05/why-startups-could-use-net-but-don’t
-/blog/archives/2011/11/05/shooting_yourself_in_the_foot_with_great_verve_and_accuracy/ 
+/blog/archives/2011/11/05/shooting_yourself_in_the_foot_with_great_verve_and_accuracy/
 /in-defence-of-objective-c
 /2011/10/04/quick-look-math-animations-javascript
 /post/9539831015/on-minimalism
@@ -76305,7 +76305,7 @@
 /09-09-2014/sweat-the-small-stuff
 /s/builderplan
 /blog/lab-notes-hacking-our-ping-pong-table
-/sites/events/files/slides/linuxcon-2014-locking-final.pdf 
+/sites/events/files/slides/linuxcon-2014-locking-final.pdf
 /blogs/KevinMaxon/20140818/223653/Finances_of_a_Bare_Bones_Developer.php
 /en-us/sysinternals/dn798348
 /development/2014/08/05/om-and-flux.html
@@ -81020,7 +81020,7 @@
 /
 /LambdaBubblePop
 /articles/quick-quickcheck
-/2014/08/12/Option-Monads-in-Rust/ 
+/2014/08/12/Option-Monads-in-Rust/
 /2014/08/a-bit-more-about-american-fuzzy-lop.html
 /2014/07/13/microsofts-new-ceo-needs-an-editor
 /2014/07/new-aws-region-eu-central-in-germany.html
@@ -85417,7 +85417,7 @@
 /articles/20120715/14504819702/dan-bull-censored-copyright-protesting-being-censored-copyright.shtml
 /2012/06/against-live-tweeting
 /2012/05/game-stick-portal.html
-/blog/2011/08/16/gamification-is-not-entirely-bullshit/ 
+/blog/2011/08/16/gamification-is-not-entirely-bullshit/
 /2012/05/getting-snappy-performance-optimisations-in-firefox-13
 /articles/debugging-clojure
 /svn/posts/3168-sign-up-in-seconds-and-then-what
@@ -87114,7 +87114,7 @@
 /blog/2009/08/in-which-i-switch-on-30-year-old.html
 /log/1032/this-new-vulnerability-dowds-inhuman-flash-exploit
 /discuss/2009/05/20/cappuccino-07-now-available
-/files/scaling_django.pdf  
+/files/scaling_django.pdf
 /metrics/2009/04/06/why-people-dont-install-firefox-part-iii
 /media/2009/talkdata/PyCon2009/073/SnapPycon09.pdf
 /blog/viewEntry/19414
@@ -94449,7 +94449,7 @@
 /forum/forum.php?forum_id=8175
 /blog/solidarity-against-online-harassment
 /tools/princeprocessor/prince-attack.pdf
-/kippo-honeypot-video-gallery/ 
+/kippo-honeypot-video-gallery/
 /2014/10/16/gcc-undefined-behavior-sanitizer-ubsan
 /the-long-stagnation
 /celebrating-cloudflares-4th-birthday
@@ -97697,7 +97697,7 @@
 /article.php?story=20111210181900395
 /2011/11/28/immutable-nanna
 /2011/11/27/mac_text_editors_and_navigation
-/2011/03/deaths-per-twh-by-energy-source.html 
+/2011/03/deaths-per-twh-by-energy-source.html
 /2011/11/google-bigquery-service-big-data.html
 /opinions/mobile-apps-must-die
 /blog/2011/09/why-not-just-use-an-ide-if-you-want-ide-features
@@ -103127,7 +103127,7 @@
 /projects/hohn
 /2012/02/27/clojure-programming-book-finished
 /scan.php?item=ubuntu_1204_armfeb&num=1&page=article
-/2012/02/regular-expressions-in-coffeescript-are.html 
+/2012/02/regular-expressions-in-coffeescript-are.html
 /hacking/how-our-tribute-to-the-hacker-way-pissed-off-a-facebook-designer
 /2011/12/moonscript-lua-based-language.html
 /2012/01/lean-domain-search-two-weeks-after-the-hackernews-launch
@@ -105487,7 +105487,7 @@
 /ruby/python-vs-ruby-a-battle-to-the-death
 /sponsor/index.php
 /blog/2007/12/14/presenting-gccalc-a-horribly-awesome-abuse-of-gcc
-/blog/camera-plus-hits-500000/ 
+/blog/camera-plus-hits-500000/
 /2010/12/01/first-introspection-2010-12
 /2010/11/eliminate-computer-science-major.html
 /blog/switching-from-svn-to-git-a-startups-perspective
@@ -121406,7 +121406,7 @@
 /blog/2009/12/bugs-in-software-flash-message.html
 /2007/01/05/evolve-your-heirachy
 /%7Etromp/cl/cl.html
-/dynamic-pricing-for-digital-goods/ 
+/dynamic-pricing-for-digital-goods/
 /Blog/archive/2009/11/18/reducing-friction-as-a-standard-operating-method.aspx
 /2009/11/15/freebsd-8-0-rc3-released
 /post/237227166/slide-different
@@ -138685,6 +138685,7 @@ blog/more-algebraic-music/index.html
 /posts/dependencies-2/
 /posts/dependencies/
 /series/low-risk-ways-to-use-fsharp-at-work/
+/updates/v1_134
 /updates/v1_133
 /updates/v1_132
 /updates/v1_131
@@ -138696,7 +138697,6 @@ blog/more-algebraic-music/index.html
 /updates/v1_127
 /blogs/2026/06/26/iterating-faster-with-ts-7
 /updates/v1_126
-/blogs/2026/06/19/what-50000-runs-taught-us
 /when-an-amiga-a570-repair-took-a-strange-turn/
 /when-the-docs-fall-short-investigating-claude-codes-budget-cap/
 /ai-didnt-destroy-your-company-your-processes-did/
@@ -145461,6 +145461,7 @@ blog/more-algebraic-music/index.html
 /coq_day3/
 /self-organizing-balance/
 /coq-day2/
+/2026/08/24/djangocon-us-2026/
 /2026/07/20/my-europython-2026/
 /2026/06/17/posette-2026/
 /2026/06/01/my-pycon-italia-2026/
@@ -145472,7 +145473,6 @@ blog/more-algebraic-music/index.html
 /2026/04/27/my-djangocon-europe-2026/
 /2026/04/15/djangocon-europe-2026/
 /2026/04/13/gdg-lecce/
-/2026/02/20/django-orm-standalone-database-inspectdb-query/
 /2026/07/30/vscode-copilot-no-lowest-priority-node-found/
 /2026/07/26/acer-nitro-v15-login-hangs/
 /2026/07/17/running-even-larger-llms-on-small-hardware/
@@ -145534,6 +145534,18 @@ blog/more-algebraic-music/index.html
 /the-igvm-file-format.html
 /paramiko-security-audit.html
 /auditing-application-permissions-in-microsoft-entra-id-hidden-risks-pitfalls-and-quarkslabs-qazpt-tool.html
+/issues/august-2026/arty-types-katy-leng/
+/issues/august-2026/low-self-esteem/
+/the-challenge-of-islam/
+/the-right-is-wrong-about-climate-change/
+/brahms-for-the-soul/
+/thoughts-from-the-nest/
+/issues/august-2026/one-of-the-greatest-shows-i-have-seen/
+/issues/august-2026/the-birth-of-a-nation/
+/what-is-a-fair-share/
+/family-in-a-time-of-war/
+/will-burnham-enable-islamic-extremism/
+/getting-used-to-it/
 /blog/archives/2026/08/friday-squid-blogging-searching-for-the-colossal-squid-2.html
 /blog/archives/2026/08/upcoming-speaking-engagements-59.html
 /blog/archives/2026/08/if-the-markets-reject-openai-and-anthropic-the-us-should-nationalize-them.html

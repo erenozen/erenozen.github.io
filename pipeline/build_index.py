@@ -102,6 +102,41 @@ def blog_quality(median, n):
 def main():
     dedup, cand_path, cls_dir, outdir = sys.argv[1:5]
     feeds_path = sys.argv[5] if len(sys.argv) > 5 else None
+    links_path = sys.argv[6] if len(sys.argv) > 6 else None
+
+    # Link-check results, if a crawl has been run.
+    #
+    # Only genuinely-gone responses count as dead. A 403 is nearly always bot
+    # blocking, 429 is our own crawler's rate limit, 401 is a paywall and 5xx is
+    # transient -- a human following any of those links arrives fine, and
+    # flagging them would make the warning noise that readers learn to ignore.
+    # Two accepted formats. The raw crawl log is 24 MB of JSONL and stays out of
+    # the repo; pipeline/dead_urls.txt is the 1.4 MB distillation of it that CI
+    # actually consumes, so a scheduled rebuild keeps warning about rot without
+    # re-crawling 154k URLs inside a 90-minute job.
+    dead_urls = set()
+    if links_path and os.path.exists(links_path):
+        GONE = {404, 410, 451}
+        checked = 0
+        for line in open(links_path):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if not line.startswith("{"):
+                dead_urls.add(line)
+                continue
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            checked += 1
+            st = r.get("status", 0)
+            if st in GONE or st < 0:
+                dead_urls.add(r.get("url"))
+        if checked:
+            print(f"link check: {checked:,} urls checked, {len(dead_urls):,} unreachable")
+        else:
+            print(f"link check: {len(dead_urls):,} known-dead urls loaded")
     os.makedirs(outdir, exist_ok=True)
 
     cands = {json.loads(l)["key"]: json.loads(l) for l in open(cand_path)}
@@ -222,7 +257,7 @@ def main():
             continue
         path = (p.path or "/") + (("?" + p.query) if p.query else "") + \
                (("#" + p.fragment) if p.fragment else "")
-        path = path.replace("\n", "").replace("\r", "")
+        path = path.replace("\n", "").replace("\r", "").strip()
 
         pts = min(s.get("points") or 0, 65535)
 
@@ -259,7 +294,10 @@ def main():
         col_blog.append(blog_id[key])
         col_pts.append(pts)
         col_day.append(day)
-        col_tm.append((blog_topic_mask[key] & TOPIC_BITS) | kind_flag)
+        dead_flag = FLAG_DEAD if (
+            dead_urls and
+            (cands[key]["home"].rstrip("/") + path) in dead_urls) else 0
+        col_tm.append((blog_topic_mask[key] & TOPIC_BITS) | kind_flag | dead_flag)
         col_ks.append((blog_source[key] << 3) | kind)
         try:
             col_hn.append(int(s["objectID"]))
@@ -335,7 +373,7 @@ def main():
                 except ValueError:
                     continue
                 path = (pu.path or "/") + (("?" + pu.query) if pu.query else "")
-                path = path.replace("\n", "").replace("\r", "")
+                path = path.replace("\n", "").replace("\r", "").strip()
                 have.add(cu)
                 taken += 1
 
@@ -359,7 +397,11 @@ def main():
                 col_blog.append(blog_id[key])
                 col_pts.append(0)
                 col_day.append(max(0, min(int((ts - DAY0) / 86400), 65535)))
-                col_tm.append((blog_topic_mask[key] & TOPIC_BITS) | kind_flag | FLAG_FEED)
+                dead_flag = FLAG_DEAD if (
+                    dead_urls and
+                    (cands[key]["home"].rstrip("/") + path) in dead_urls) else 0
+                col_tm.append((blog_topic_mask[key] & TOPIC_BITS) | kind_flag
+                              | FLAG_FEED | dead_flag)
                 col_ks.append((blog_source[key] << 3) | kind)
                 col_score.append(max(0, min(120, int(120 * recency))))
                 col_hn.append(0)
@@ -370,6 +412,9 @@ def main():
               f"{firehose} firehose feeds throttled)")
 
     n = len(titles)
+    if dead_urls:
+        n_dead = sum(1 for t in col_tm if t & FLAG_DEAD)
+        print(f"posts flagged dead: {n_dead:,} ({100*n_dead/max(n,1):.1f}%)")
     print(f"posts indexed: {n:,}")
 
     with open(os.path.join(outdir, "titles.txt"), "w") as f:

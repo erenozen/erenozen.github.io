@@ -88,6 +88,15 @@ def main():
     missing = [f for f in FAMOUS if f not in names]
     check(not missing, f"famous blogs present (missing: {missing or 'none'})")
 
+    # Dead-link flags. Both directions matter: zero means the link-check
+    # argument was quietly dropped from the build command (the index still
+    # builds fine, it just stops warning anyone), and a huge share means the
+    # crawler was blocked wholesale rather than finding real rot. Measured at
+    # 12.0% over 154k URLs, decaying monotonically from 32% (2009) to 4% (2025).
+    n_dead = sum(1 for t in tm if t & (1 << 15))
+    check(0.02 < n_dead / n < 0.30,
+          f"dead-link share sane ({n_dead/n:.1%} of posts flagged)")
+
     # The newsroom toggle is the product's main promise; if it hides nothing or
     # everything, something upstream broke.
     hidden = meta["hidden_source_mask"]

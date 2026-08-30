@@ -287,6 +287,43 @@ def main():
         page.wait_for_timeout(400)
         page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/light.png")
 
+        # --- dead links ---
+        # 12% of the corpus 404s, concentrated in the oldest posts (32% of 2009
+        # vs 4% of 2025). Sorting Oldest is exactly where a reader meets rot, so
+        # that is where the warning has to be visible and the escape hatch real.
+        page.goto(base + "?sort=oldest", wait_until="load")
+        page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
+        page.wait_for_selector("#results > li", timeout=20000)
+        n_dead = page.locator(".r-dead").count()
+        check(n_dead > 0, "dead-link warning renders on the oldest posts",
+              f"{n_dead} of {page.locator('#results > li').count()} rows")
+
+        arc = page.locator("#results a.arc-link").first
+        if arc.count():
+            href = arc.get_attribute("href") or ""
+            orig = page.locator("#results li").filter(
+                has=page.locator("a.arc-link")).first.locator("a.row").get_attribute("href")
+            check(href.startswith("https://web.archive.org/web/"),
+                  "archive fallback points at the Wayback Machine", href[:60])
+            check(orig and orig in href,
+                  "archive link carries the original URL", (orig or "")[:60])
+        else:
+            check(False, "archive fallback link present on a dead row")
+
+        # The warning must not leak onto live rows: every .r-dead needs a
+        # sibling archive link, and rows without the tag must not have one.
+        mismatch = page.evaluate("""() => {
+            let bad = 0;
+            for (const li of document.querySelectorAll('#results > li')) {
+                const d = !!li.querySelector('.r-dead');
+                const a = !!li.querySelector('a.arc-link');
+                if (d !== a) bad++;
+            }
+            return bad;
+        }""")
+        check(mismatch == 0, "dead tag and archive link always travel together",
+              f"{mismatch} mismatched rows")
+
         # --- mobile ---
         page.set_viewport_size({"width": 390, "height": 844})
         page.wait_for_timeout(400)

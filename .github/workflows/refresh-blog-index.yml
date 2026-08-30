@@ -85,11 +85,15 @@ jobs:
             work/expected.jsonl pipeline/classified || \
             echo "::warning::classification coverage is incomplete; index will omit blogs"
 
+      # dead_urls.txt is the committed distillation of a full HEAD-check crawl
+      # (154k URLs, ~10h -- far past this job's budget). Link rot is one-way and
+      # concentrated in old posts, so replaying the known-dead set is accurate
+      # between crawls; re-run pipeline/check_links.py by hand to refresh it.
       - name: Build search index
         run: |
           python pipeline/build_index.py \
             work/hn_dedup.jsonl work/candidates.jsonl pipeline/classified \
-            blogs/data work/feeds.jsonl
+            blogs/data work/feeds.jsonl pipeline/dead_urls.txt
 
       - name: Sanity-check the built index
         run: python pipeline/check_index.py blogs/data

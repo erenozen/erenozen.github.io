@@ -138685,6 +138685,7 @@ Dependency injection using the Reader monad
 Dependency injection using parameters
 Six approaches to dependency injection
 Low-risk ways to use F# at work
+Visual Studio Code 1.134 (Insiders)
 Visual Studio Code 1.133
 Visual Studio Code 1.132
 Visual Studio Code 1.131
@@ -138696,7 +138697,6 @@ How Prompt Tuning Improved GPT-5.5 in VS Code
 Visual Studio Code 1.127
 Iterating faster with TypeScript 7
 Visual Studio Code 1.126
-What 50,000 Runs of a 5-Line Eval Taught Us
 When an Amiga A570 Repair Took a Strange Turn
 When the Docs Fall Short: Investigating Claude Code’s Budget Cap
 AI Didn’t Destroy Your Company, Your Processes Did
@@ -145461,6 +145461,7 @@ Design Pattern Dangers
 Darkest Proof: Day 3
 What Keeps a Self-Organizing Team From Falling Apart
 Darkest Proof: Day 2
+DjangoCon US 2026
 My EuroPython 2026
 Posette 2026
 My PyCon Italia 2026
@@ -145472,7 +145473,6 @@ Django London 2026
 My DjangoCon Europe 2026
 DjangoCon Europe 2026
 GDG Lecce 2026
-Django ORM Standalone⁽¹⁾: Querying an existing database
 VScode copilot: No lowest priority node found
 Acer Nitro V15 login hangs
 Running even larger LLMs on small hardware
@@ -145534,6 +145534,18 @@ How OLTs may have exposed entire ISP networks
 The IGVM File Format
 Paramiko Security Audit
 Auditing Application Permissions in Microsoft Entra ID: Hidden Risks, Pitfalls, and Quarkslab's QAZPT Tool
+Arty Types: Katy Leng
+Low self-esteem
+The challenge of Islam
+The right is wrong about climate change
+Brahms for the soul
+Thoughts from the nest
+One of the greatest shows I have seen
+The birth of a nation
+What is a fair share?
+Family in a time of war
+Will Burnham enable Islamic extremism?
+A grief observed
 Friday Squid Blogging: Searching for the Colossal Squid
 Upcoming Speaking Engagements
 If the Markets Reject OpenAI and Anthropic, the US Should Nationalize Them
