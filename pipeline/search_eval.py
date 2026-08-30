@@ -16,11 +16,11 @@ titles and 40 slots is supposed to leave 51 behind.
 
 Exits non-zero if any query returns a short page while matches remain.
 """
-import http.server, json, re, socketserver, sys, threading
+import http.server, json, os, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-ROOT = Path("/home/eren/erenozen.github.io/blogs")
+ROOT = Path(__file__).resolve().parent.parent / "blogs"
 PORT = 8801
 QUERIES = ["sqlite internals", "rust async", "kernel scheduler", "dns works",
            "postmortem outage", "writing a compiler", "garbage collection",
@@ -42,7 +42,9 @@ def main():
     httpd = socketserver.TCPServer(("127.0.0.1", PORT), H)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     with sync_playwright() as p:
-        b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
+        exe = os.environ.get("CHROME_PATH") or (
+            "/usr/bin/google-chrome" if os.path.exists("/usr/bin/google-chrome") else None)
+        b = p.chromium.launch(executable_path=exe, args=["--no-sandbox"])
         pg = b.new_page()
         pg.goto(f"http://127.0.0.1:{PORT}/", wait_until="load")
         pg.wait_for_function("() => !document.querySelector('#q').disabled", timeout=90000)

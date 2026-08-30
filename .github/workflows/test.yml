@@ -1,0 +1,61 @@
+name: Test
+
+# The index is data, but the finder is code, and until now none of it was
+# tested on push. Every UI bug fixed this month -- an action pill sitting on
+# top of a topic tag, a warning at 3.49:1 contrast, "all blogs" returning to
+# all posts -- was caught by running these suites BY HAND. That is not a
+# safety net, that is a habit.
+#
+# This also runs on the refresh bot's own commits, so a bad index is caught
+# by the same checks that guard a bad edit.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "blogs/**"
+      - "pipeline/**"
+      - ".github/workflows/test.yml"
+  pull_request:
+    paths:
+      - "blogs/**"
+      - "pipeline/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r pipeline/requirements.txt
+          pip install playwright
+          playwright install --with-deps chromium
+
+      # 26 assertions about the index files agreeing with each other. No
+      # baseline argument: on a push the committed index IS the baseline, and
+      # regression is only meaningful against the run that replaced it.
+      - name: Check index consistency
+        run: python pipeline/check_index.py blogs/data
+
+      # Recall against ground truth the search did not produce.
+      - name: Check search recall
+        run: python pipeline/search_eval.py
+
+      # 82 assertions driving the real page in a real browser.
+      - name: Check the finder in a browser
+        run: python pipeline/browser_test.py

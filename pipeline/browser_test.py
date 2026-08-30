@@ -5,15 +5,18 @@ Everything before this was static reasoning about code that had never been
 rendered. This serves blogs/ over HTTP (the worker needs a real origin -- it
 cannot load from file://) and exercises the paths a visitor takes.
 """
-import http.server, json, socketserver, sys, threading, time
+import http.server, json, os, socketserver, sys, tempfile, threading, time
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-ROOT = Path("/home/eren/erenozen.github.io/blogs")
+ROOT = Path(__file__).resolve().parent.parent / "blogs"
 PORT = 8731
 
 failures = []
+
+# Screenshots are diagnostics, not assertions; CI has nowhere to put them.
+SHOTS = os.environ.get("SHOT_DIR") or tempfile.mkdtemp(prefix="blogfinder-shots-")
 
 JS_CONTRAST = r'''() => {
                 const lin = (c) => { c /= 255;
@@ -47,6 +50,15 @@ JS_CONTRAST = r'''() => {
             }'''
 
 
+# Chrome: an explicit CHROME_PATH wins, then a system install, then Playwright's
+# bundled build. Hardcoding /usr/bin/google-chrome meant these tests could only
+# ever run on the machine they were written on.
+def launch(p):
+    exe = os.environ.get("CHROME_PATH") or (
+        "/usr/bin/google-chrome" if os.path.exists("/usr/bin/google-chrome") else None)
+    return p.chromium.launch(executable_path=exe, args=["--no-sandbox"])
+
+
 def check(ok, label, detail=""):
     print(("  ok   " if ok else "  FAIL ") + label + (f"  [{detail}]" if detail else ""))
     if not ok:
@@ -74,8 +86,7 @@ def main():
     console, page_errors, failed_reqs = [], [], []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(executable_path="/usr/bin/google-chrome",
-                                    args=["--no-sandbox"])
+        browser = launch(p)
         page = browser.new_page(viewport={"width": 1280, "height": 900})
         page.on("console", lambda m: console.append((m.type, m.text)))
         page.on("pageerror", lambda e: page_errors.append(str(e)))
@@ -369,10 +380,10 @@ def main():
         page.wait_for_timeout(400)
         theme = page.get_attribute("html", "data-theme")
         check(theme == "dark", "theme toggle works", str(theme))
-        page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/dark.png")
+        page.screenshot(path=os.path.join(SHOTS, "dark.png"))
         page.click(".theme-toggle")
         page.wait_for_timeout(400)
-        page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/light.png")
+        page.screenshot(path=os.path.join(SHOTS, "light.png"))
 
         # --- dead links ---
         # 12% of the corpus 404s, concentrated in the oldest posts (32% of 2009
@@ -684,7 +695,7 @@ def main():
             check(not clash, f"actions clear row content at {width}px ({url})",
                   (clash[0] if clash else "none")[:60])
 
-        page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/mobile.png")
+        page.screenshot(path=os.path.join(SHOTS, "mobile.png"))
 
         # A pinned blog adds a header, a description and a recommendation row
         # above the results. That is the deepest the chrome ever gets, so it is
