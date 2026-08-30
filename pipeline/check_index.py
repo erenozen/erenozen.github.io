@@ -154,6 +154,31 @@ def main():
     nh = sum(1 for k in ks if (hidden >> (k >> 3)) & 1)
     check(0.10 < nh / n < 0.85, f"hidden-source share sane ({nh/n:.1%} of posts)")
 
+    # Regression guard.
+    #
+    # Every other check here asks whether the index is internally consistent.
+    # All of them pass on an index that is consistent and much smaller than the
+    # one it replaces -- which is exactly what a scheduled refresh produces when
+    # an input goes missing. Measured: a cold feed cache builds a perfectly
+    # valid index with 17.9% fewer posts and 3,731 fewer subscribe links, and
+    # the old suite waved it through.
+    if len(sys.argv) > 2 and os.path.exists(sys.argv[2]):
+        prev = json.load(open(sys.argv[2]))
+        print(f"\nbaseline: {prev.get('n_posts', 0):,} posts / "
+              f"{prev.get('n_blogs', 0):,} blogs")
+        for key, label, tol in (("n_posts", "posts", 0.05),
+                                ("n_blogs", "blogs", 0.05),
+                                ("n_feed_urls", "feed URLs", 0.10),
+                                ("n_feed_posts", "feed posts", 0.10)):
+            before = prev.get(key)
+            if not before:
+                continue          # baseline predates this field
+            now_v = meta.get(key, 0)
+            drop = (before - now_v) / before
+            check(drop <= tol,
+                  f"{label} did not regress ({before:,} -> {now_v:,}, "
+                  f"{-drop:+.1%}, tolerance -{tol:.0%})")
+
     print()
     if fail:
         print(f"{len(fail)} CHECK(S) FAILED")

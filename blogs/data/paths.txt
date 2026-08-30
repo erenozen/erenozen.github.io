@@ -2315,7 +2315,6 @@
 /dithered-qr-codes/wtf
 /space-exploration/voyager/nasa-figured-out-how-to-keep-its-48-year-old-voyager-2-probe-running-for-yet-another-year
 /2026/08/04/us-has-used-virtually-all-of-its-long-range-precision-missiles-report.html
-/2026/08/02
 /jslinux
 /post/44698559168/breaking-down-amazons-mega-dropdown
 /world/2013/jul/31/nsa-top-secret-program-online-data
@@ -2511,6 +2510,7 @@
 /densha
 /2026/06/30/the-father-of-the-internet-is-finally-retiring
 /2026/ai-aesthetic
+/2026/08/02
 /models
 /blog/postgres-listen-notify-scalability
 /2026/08/05/google-deepmind-demis-hassabis-ai
@@ -4332,7 +4332,6 @@
 /bandcamps-entire-union-bargaining-team-was-laid-off
 /articles/23/09/26/eu-tells-apple-to-open-everything-up-to-its-rivals
 /2023/11/05/business/banks-accounts-close-suddenly.html
-/blog/mullvad-integration
 /2023/11/13/placemark
 /blog/build-ai
 /blog/cold-blooded-software
@@ -4696,6 +4695,7 @@
 /
 /2023/07/13/signal-president-mass-surveillance-uk-law
 /world/2023/jun/06/whistleblower-ufo-alien-tech-spacecraft
+/blog/mullvad-integration
 /blog/2023/08/07/tactics-for-writing-in-public
 /blog/2023/10/08
 /business/2023/09/21/companies/nippon-tv-ghibli-acquisition
@@ -15805,7 +15805,6 @@
 /articles/ai-paradigm
 /
 /articles/u-s-spy-agencies-buy-vast-quantities-of-americans-personal-data-report-says-f47ec3ad
-/tabletop-games/23679440/teens-love-chess-memes-boom-2023
 /blah/text-hates-you
 /blog/storm-0558-compromised-microsoft-key-enables-authentication-of-countless-micr
 /reddit-ceo-will-change-rules-to-make-mods-less-powerful-2023-6
@@ -16877,6 +16876,7 @@
 /how-to-draw-ideas
 /p/setting-up-an-electronics-workshop
 /blog/2023/01/15/how-to-improve-python-packaging
+/tabletop-games/23679440/teens-love-chess-memes-boom-2023
 /you_dont_have_to_learn_assembly_to_read_disassembly.html
 /articles/u-s-says-some-companies-cheat-h-1b-lottery-driving-record-applications-1a3e4fd
 /sanfrancisco/news/california-cancels-salmon-fishing-season
@@ -30168,7 +30168,6 @@
 /awk.html
 /2023/2/28/23617624/pluto-tv-dmca-mpa-github-playlists
 /story/palantir-germany-gotham-dragnet
-/blog/2023-01-30-series-seed-announcement
 /p/agents
 /2023/04/13/hackers-claim-vast-access-to-western-digital-systems
 /news/articles/2023-04-03/adderall-shortages-are-made-worse-by-the-opioid-crisis
@@ -31670,6 +31669,7 @@
 /2022/12/13/jquery-3-6-2-released
 /blog/bun-v0.3.0
 /blog/v1.27
+/blog/2023-01-30-series-seed-announcement
 /blog/how-see-a-satellite-tonight-works
 /blog/2022/12/18
 /nibbler
@@ -32176,7 +32176,6 @@
 /do-we-fear-the-serializable-isolation-level-more-than-we-fear-subtle-bugs-5a025401b609
 /blog/napkin-inference-cost/index.html
 /blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing
-/2026/06/04/thunderbird-littering-my-home
 /2026/07/chrome-arm64-linux-available
 /news/arduino-launches-plug-and-play-modules-for-long-range-sensor-projects
 /articles/2026/8/2.html
@@ -33851,6 +33850,7 @@
 /blog/granite-4-1-ai-foundation-models
 /hpc/algorithms/gcd
 /farmer-arrested-for-speaking-too-long-at-datacenter-town-hall-vows-to-fight
+/2026/06/04/thunderbird-littering-my-home
 /blog/noroboto
 /ml/all/20260507070547.2268452-1-sashal@kernel.org
 /general/2026/06/29/obfuscation1.html
@@ -35498,7 +35498,6 @@
 /performance/2025/03/21/database-protocols.html
 /blog/path
 /2025/Apr/19/claude-code-best-practices
-/blog/arroyo-is-joining-cloudflare
 /posts/2021-01-31-i-wrote-a-compiler
 /archive/2012/07/05/turkish-i-problem-and-why-you-should-care.aspx
 /2025/06/16/drawbridges-go-up.html
@@ -37213,6 +37212,7 @@
 /wordpress/en/glider-for-apple-ii
 /2025/02/long-story-of-division.html
 /i-blog-with-raw-html
+/blog/arroyo-is-joining-cloudflare
 /blog/the-real-fail-rate-of-ebs
 /review/nvidia-rtx5090-llama-cpp
 /Zig-Dot-Star-Syntax
@@ -46097,7 +46097,6 @@
 /gains-im-seeing-from-my-second-brain-tool.html
 /support/unlisted-app-distribution
 /articles/meta-unveils-new-ai-supercomputer-11643043601
-/the-year-in-math-and-computer-science-20211223
 /cron-best-practices
 /typescript/a-proposal-for-type-syntax-in-javascript
 /culture/2022/02/12/columbo-shows-the-benefits-of-asking-just-one-more-thing
@@ -48046,6 +48045,7 @@
 /take-two-sues-enthusiasts-behind-gta-fan-projects-re3-revc-210903
 /posts/6ce99700e3090139df2b002590d8e506
 /?p=2725
+/the-year-in-math-and-computer-science-20211223
 /blog/mmu_man/2021-10-04_ok_lenovo_we_need_to_talk
 /leaders/2021/10/16/is-the-world-economy-entering-a-wage-price-spiral
 /2021/10/facebook-recruiter-correspondence
@@ -48211,7 +48211,6 @@
 /2022/06/pulling-mikrotik-into-the-limelight
 /posts/chatgpt-cryptics.html
 /articles/easily-migrate-from-linux-to-freebsd
-/av1-playback-support
 /blog/type-constraints-in-65-lines-of-sql
 /news/secadv/20230207.txt
 /~cks/space/blog/linux/TransparentHugepagesBadLuck
@@ -50115,6 +50114,7 @@
 /changelog/2022-08-04-commit-comments-no-longer-appear-in-the-pull-request-timeline
 /p/air-support-in-a-backpack-the-switchblade
 /best-linux-hardware-system-info-commands
+/av1-playback-support
 /?p=6673
 /SubscriberLink/904960/21b6c0e8aea8f235
 /lists/oss-security/2022/08/02/1
@@ -56847,7 +56847,6 @@
 /tom-clancy-dead-celebrated-thriller-author-dies-at-age-66-2013-10
 /world/2013/sep/25/revealed-qatars-world-cup-slaves
 /gadgets/2013/09/microsofts-hardware-round-2-surface-2-and-surface-pro-2
-/threatlevel/2013/08/nsa-tapping-internet
 /2014/09/19/business/dealbook/alibaba-raises-218-billion-in-initial-public-offering.html
 /lkml/2014/7/24/584
 /tech-policy/2014/07/white-house-nixes-patent-office-pick-after-tech-sector-outcry
@@ -58678,6 +58677,7 @@
 /journal/2012/08/the-best-interface-is-no-interface.html
 /blog/do-call-yourself-a-programmer-and-other-career-advice.html
 /blog/2012/07/new-programming-jargon.html
+/threatlevel/2013/08/nsa-tapping-internet
 /brick
 /connect/blogs/norton-mobile-insight-discovers-facebook-privacy-leak
 /95696/you-probably-didnt-read-the-most-telling-part-of-orwells-1984-the-appendix
@@ -60340,7 +60340,6 @@
 /blog/llm-font-identification
 /ea-dice-battlefield-battle-royale-free-to-play-f2p
 /blog/better-named-character-reference-tokenization
-/2025/06/14/transitous-adding-data.html
 /self-guarantee
 /ruby/json/2025/08/02/whats-wrong-with-the-json-gem-api.html
 /en/it/2025/07/24/x11-configuration-simple.html
@@ -62239,6 +62238,7 @@
 /framework-stops-selling-some-laptops-in-the-us-in-response-to-tariffs
 /2025/03/27/the-revolving-door-spins-former-trump-fcc-boss-ajit-pai-promoted-to-top-wireless-industry-lobbyist
 /log/a_117_crawl_order
+/2025/06/14/transitous-adding-data.html
 /blog/2025/06/10/how-to-compile-a-c-program
 /oldnewthing/20250606-00?p=111254
 /2025/05/the-windows-registry-adventure-7-attack-surface.html
@@ -79743,7 +79743,6 @@
 /posts/unwanted-tracking
 /post/2023/04/the-endless-uses-for-an-always-on-mac
 /p/the-curse-of-being-good-in-it
-/p/gpt-4-capabilities
 /lunasorcery/post/2465593-testing-your-animati
 /articles/2023-07-29-learning-algorithms.html
 //blog/jekyll/update/2023/08/08/a-really-big-computer.html
@@ -81135,6 +81134,7 @@
 /blog/our-process-for-finding-initial-traction-pre-product
 /archives/2022/12/11/we-iterate-so-that-you-can-recurse
 /posts/kona22
+/p/gpt-4-capabilities
 /2023/04/11/video-engineering/high-quality-audio-xhe-aac-codec-meta
 /scene/machine-yearning/index.php
 /nox-pyenv-all-python-versions
@@ -83907,7 +83907,6 @@
 /blog/blog/2023/04/26/lambda-capabilities
 /empirical
 /blog/2023/04/15/The-Soul-of-an-Old-Machine
-/2023/04/15/the-end-of-computer-magazines-in-america
 /2023/08/26/yabs-august-2023
 /blog/ubuntu-desktop-charting-a-course-for-the-future
 /blog/time-zone-nightmares
@@ -85256,6 +85255,7 @@
 /2022/12/rick-morty-portal-window-closing-effect
 /hillelwayne/archive/bugs-that-literally-cost-money
 /2022/12/01/goodbye-spotify
+/2023/04/15/the-end-of-computer-magazines-in-america
 /2023/04/rust-is-dead-to-me
 /ubuntu-touch-ota-1-focal-brings-ubuntu-20-04-lts-to-smartphones
 /news/v0.28-monorepos-fast-maps-and-more
@@ -97023,7 +97023,6 @@
 /new-law-could-allow-uk-gchq-to-monitor-internet-logs-in-real-time
 /news/security/new-tool-exploits-microsoft-teams-bug-to-send-malware-to-users
 /news/technology/youtube-tests-restricting-ad-blocker-users-to-3-video-views
-/source-and-buggy/elegy-for-the-native-mac-app-39ee92cc37ba
 /humor/How-to-get-on-hackernews-front-page
 /news/Wine-8.20-Released
 /blog/2023/10/why-your-web-design-sucks
@@ -98253,6 +98252,7 @@
 /redbooks.nsf/redbookabstracts/crse0304.html?Open=
 /boring/2023-02-11_term-loop.html
 /blog/ray-breaks-the-usd1-tb-barrier-as-the-worlds-most-cost-efficient-sorting
+/source-and-buggy/elegy-for-the-native-mac-app-39ee92cc37ba
 /news/brave-new-world-path-forward
 /fun/humor.html
 /2012/03/27/the-story-of-microsleep
@@ -101028,7 +101028,6 @@
 /2011/01/new-app-engine-datastore-api.html
 /2010/12/29/where-pair-programming-fails-for-me
 /blog/archives/2010/11/22/why-you-may-not-like-your-job-even-though-everyone-envies-you?refer=hn
-/mbrubeck/2010/11/19/mobile-browser-detection.html
 /3
 /first-employee-or-cofounder
 /2012/08/pycon-us-2013-keynotes-jobs-fair.html
@@ -101592,7 +101591,6 @@
 /en/post/446790
 /articles/20190216/10394141613/facebook-ups-surveillance-users-to-keep-tabs-people-who-dont-like-facebook.shtml
 /authoritarian-tech/surveillance-and-internet-disruption-in-baku
-/2019/02/a-small-and-objective-taste-of.html
 /javascript/publish-npm-package-with-github-actions
 /blog/2019.11.14-what-makes-a-good-runbook
 /the-deal-jeff-bezos-got-on-basecamp
@@ -102045,6 +102043,7 @@
 /~esr/faqs/hacker-howto.html
 /weblog/pgwrong
 /Blog/archive/2010/03/14/map-reduce-ndash-a-visual-explanation.aspx
+/mbrubeck/2010/11/19/mobile-browser-detection.html
 /p/phpvirtualbox
 /2010/10/notes-from-porting-c-code-to-php.html
 /2010/why-i-love-text-files
@@ -102766,6 +102765,7 @@
 /2018/05/04/performance-analysis-of-cloud-applications
 /release-notes/gimp-2.10.html
 /2017/03/16/deconstructing-xen
+/2019/02/a-small-and-objective-taste-of.html
 /sitr/2019/02/phishing-attacks-against-facebook-google-via-google-translate.html
 /concepts/long-polling
 /2018/11/12/fully-self-directed-replication
@@ -104298,7 +104298,6 @@
 /responsibility-is-taken-before-it-is-given/
 /blog/b18ae804/elpher-my-tweaks-for-better-gemini-browsing-in-emacs/
 /blog/e83e9103/i-closed-pull-requests-and-issues-on-my-projects-and-im-happier/
-/blog/bd74e61a/were-fighting-over-the-wrong-wire-websockets-vs-sse-for-html-over-the-wire/
 /khabib-nurmagomedov/?utm_source=rss&utm_medium=rss&utm_campaign=khabib-nurmagomedov
 /khabib-nurmagomedov-transcript/?utm_source=rss&utm_medium=rss&utm_campaign=khabib-nurmagomedov-transcript
 /khabib-nurmagomedov-files/?utm_source=rss&utm_medium=rss&utm_campaign=khabib-nurmagomedov-files
@@ -104324,7 +104323,6 @@
 /blog/volunteer-at-nextcloud-community-conference-2026/
 /writing/jct-1-labs-announces-general-availability-jct-1
 /blog/2026/claude-text-watermarking.html
-/blog/2026/build-a-reasoning-model-from-scratch-on-amazon.html
 /2026/08/12/clips-from-hacker-news-thread/
 /2026/08/14/configuracao-do-warsaw-para-acessar-o-banco-do-brasil-no-linux-em-2026/
 /spriteloop-free-2d-animation-tool/
@@ -105092,7 +105090,6 @@
 /boiling-liquid-does-something-in-near-zero-gravity-even-scientists-didnt-see-coming
 /we-may-finally-know-why-mysterious-mushroom-fairy-rings-grow-in-circles
 /what-does-it-take-for-a-robot-to-hold-a-conversation-with-a-room-not-just-a-person/
-/robotics-roadmaps-from-around-the-world/
 /2026/08/16/windows-11-kb5121003-is-triggering-game-crashes-and-causing-other-problems-on-some-pcs/
 /2026/08/16/windows-11-is-heading-for-a-new-look-as-microsoft-replaces-another-legacy-interface-with-winui-3/
 /2026/08/15/dont-panic-if-windows-11-reboots-multiple-times-for-security-updates-explained-why-its-happening/
@@ -108663,6 +108660,7 @@ mchav.github.io/context-complexity/
 /post/changing-devtools-is-cheap-owning-them-isnt/
 /post/ai-subsystem-maintainer/
 /post/find-problems-staff-engineer/
+/blog/bd74e61a/were-fighting-over-the-wrong-wire-websockets-vs-sse-for-html-over-the-wire/
 /blog/70d817e8/web-design-for-terminal-browsers/
 /gary-gallagher/?utm_source=rss&utm_medium=rss&utm_campaign=gary-gallagher
 /gary-gallagher-transcript/?utm_source=rss&utm_medium=rss&utm_campaign=gary-gallagher-transcript
@@ -108715,6 +108713,7 @@ mchav.github.io/context-complexity/
 /article/when-the-future-doesnt-need-us
 /blog/metabase-security-incident
 /blog/mcp-vs-cli-token-efficiency
+/blog/2026/build-a-reasoning-model-from-scratch-on-amazon.html
 /blog/2026/muse-glimmer-30b-architecture-notes.html
 /blog/2026/llms-from-scratch-reaches-100000-github-stars.html
 /blog/2026/notable-open-weight-models-this-week.html
@@ -108757,7 +108756,6 @@ mchav.github.io/context-complexity/
 /2026/08/11/valley-fold-logo-brand-design/
 /2026/08/07/sublime-text/
 /2026/07/31/contact-form-saga/
-/2026/07/24/businessing/
 /post/lfp/
 /blog/build-autogpt-agent-with-scrapingbee/
 /blog/best-sitemap-crawlers/
@@ -110465,6 +110463,7 @@ mchav.github.io/context-complexity/
 /batch-invariance-llm-inference/
 /mixture-of-experts-routing-llm-repeatability/
 /structured-outputs-llm-deterministic/
+/robotics-roadmaps-from-around-the-world/
 /a-5-in-1-seed-sized-surgical-robot/
 /ai-agents-create-virtual-playgrounds-to-help-robots-get-crucial-training-data/
 /robots-in-society-business-and-culture-july-2026/
@@ -110966,7 +110965,6 @@ mchav.github.io/context-complexity/
 /blog/agent-intent-based-access-control
 /blog/data-scanning-performance
 /blog/ai-share-links
-/blog/ai-security-challenges
 /a-security-critical-project-where-i-dont-read-the-code/
 /escaping-ai-coding-ratrace/
 /blog/2026-07-28-building-galley-house/
@@ -111761,7 +111759,6 @@ mchav.github.io/context-complexity/
 /blog/whats-new-in-opensearch-3-8/
 /blog/agentic-relevance-tuning/
 /blog/connect-opensearch-to-private-ml-endpoints/
-/blog/the-forbidden-index-building-privacy-preserving-search-with-opensearch/
 /megacharts/gpus
 /megacharts/cases
 /cases/new-best-cooler-master-haf-ii-500-case-review-thermals-fan-tests-build-quality
@@ -113677,6 +113674,7 @@ mchav.github.io/context-complexity/
 /2026/07/16/eevblog-1757-sharp-gf-7600-boombox-repair-part-2-electric-boogaloo/
 /2026/07/16/eevblog-1756-sharp-1980s-boombox-bodge-repair/
 /unity-getting-real-time-global-illumination/
+/2026/07/24/businessing/
 /2026/07/16/choose-your-own-dark-mode/
 /2026/07/10/astro-is-fine/
 /2026/07/08/select-your-starter-class/
@@ -115021,6 +115019,7 @@ mchav.github.io/context-complexity/
 /blog/flink-cdc-for-yugabytedb/
 /blog/meko-self-sign-up-get-started/
 /2026/07/jruby-at-rubyconf-2026.html
+/blog/ai-security-challenges
 /blog/dolphin-x-stealer
 /blog/huggingface-breach
 /blog/email-security-architecture
@@ -115535,6 +115534,7 @@ electric_surfboard.html
 /2026/2026-07-rfmf-lori-niko/
 /news/update56
 /2026/07/20/pointer-theory/
+/blog/the-forbidden-index-building-privacy-preserving-search-with-opensearch/
 /announcements/opensearchcon-north-america-2026-to-showcase-five-years-of-innovation-powering-enterprise-search-observability-and-analytics/
 /posts/garronpress-under-the-hood.html
 /2026/07/21/openclaw-ai-assistant-on-red-hat-developer-sandbox/
@@ -118831,7 +118831,6 @@ irenezhang.net/blog/2026/07/06/ai.html
 /posts/thoughts-on-meditations-on-moloch
 /posts/baberowski-interview
 /casino-spiele-kostenlos-ohne-anmeldung.html
-/book-of-dead.html
 /the-winning-variant
 /a-room-you-cant-see
 /online-modeling-of-bpmn-with-besser/
@@ -121398,7 +121397,6 @@ wyounas.github.io//model-checking/puzzles/2026/06/06/finding-all-solutions-to-li
 /2026/05/29/unreal-source-builds-in-2026-with-rider/
 /blog/sabbatical-17-melbourne/
 /blog/sabbatical-16-kaikoura/
-/blog/sabbatical-15-tasman-marlborough/
 /2026/05/30/applying-least-privilege-to-end-to-end-encrypted-dashboards/
 /2026/06/taming-backstage-entities-with-a-type-safe-search-and-command-palette.html
 /2026/06/spec-driven-development-best-practices.html
@@ -121457,6 +121455,7 @@ wyounas.github.io//model-checking/puzzles/2026/06/06/finding-all-solutions-to-li
 /2026/05/guidelines-for-respectful-use-of-ai.html
 /posts/modern-engineering-values
 /posts/local-llm
+/book-of-dead.html
 /tricks-fuer-spielautomaten.html
 /serioeses-online-casino-deutschland.html
 /oasis-sperre-aufheben.html
@@ -123834,6 +123833,7 @@ wyounas.github.io//model-checking/puzzles/2026/06/06/finding-all-solutions-to-li
 /blog/2026-05-19-numconvert/
 /7-new-convex-components
 /react-app-with-real-time-sync
+/blog/sabbatical-15-tasman-marlborough/
 /blog/sabbatical-14-west-coast/
 /blog/sabbatical-13-wanaka/
 /post/git-cow-worktrees/
@@ -127267,7 +127267,6 @@ mchav.github.io/context-complexity/mchav.github.io/being-less-clunky/
 /2026/04/ozempic-dreams/
 /2026/04/amazon-blink-gen3-outdoor-camera.html
 /2026/04/tire-pressure-gauge-teardown.html
-/2026/03/secrets-of-ra-02-lora-module-silicon.html
 /book/Tribal
 /book/Conscious19
 /book/BrainMotives
@@ -127990,7 +127989,6 @@ andersource.github.io/2026/03/29/tradeoff-sliders.html
 /blog/never_been_about_code/
 /2026/03/27/doomtoll/
 /talks/botconf_2026/
-/2026/03/27/moving-bedrock-solutions-to-production-with-defence-in-depth-beyond-standard-guardrails/
 /article/modify-computer/modify-filezilla-workaround-bambu-3d-printer-ftp-issue.lantian/
 /blog/we-migrated-our-email-infrastructure-to-kumomta-heres-why-it-matters-for-you
 /2026/03/30/shipping-snake-oil/
@@ -129297,6 +129295,7 @@ mchav.github.io/context-complexity/mchav.github.io/what-category-theory-teaches-
 /2026/03/24/2/how-to-pass-secrets-between-reboots
 /2026/03/24/1/swap-out-the-root-before-boot
 /posts/2026/i-tried-to-write-a-http-service-in-zig-and-failed/
+/2026/03/secrets-of-ra-02-lora-module-silicon.html
 /2026/03/aneng-m127-multimeter-teardown.html
 /a-with-based-effect-notation/
 /why-webassembly-components/
@@ -130014,6 +130013,7 @@ mchav.github.io/context-complexity/mchav.github.io/what-category-theory-teaches-
 /blog/in_search_of_resilience/
 /2026/03/12/baby-turtles/
 /talks/first_paris_2026/
+/2026/03/27/moving-bedrock-solutions-to-production-with-defence-in-depth-beyond-standard-guardrails/
 /2026/03/16/ten-tips-for-designing-a-useful-rest-service-api/
 /2026/03/bring-back-rss
 /ghc/blog/20260327-ghc-9.12.4-released.html
@@ -149980,7 +149980,6 @@ chriskw.xyz/2026/07/07/Dodecahedra/chriskw.xyz/2025/05/21/Fractal/
 /blog/2025/03/28/10k-github-stars
 /blog/animating-text-with-dawkins-weasel
 /news/2025-03-19_-_Lemmy_Release_v0.19.10_and_Developer_AMA
-/2025/02/28/generative-ai-reasoning-models-dont-reason-even-if-it-seems-they-do/
 /blog/2441/
 /blog/2440/
 /home/2025/silo-ui
@@ -150768,6 +150767,7 @@ andersource.github.io/2026/03/29/andersource.github.io/2025/02/02/ode-to-my-offi
 /democracy-now/
 /hogwarts-legacy/
 /blog/gempress-formatting-ebooks-with-gemini
+/2025/02/28/generative-ai-reasoning-models-dont-reason-even-if-it-seems-they-do/
 /2025/02/24/finally-tried-the-apple-vision-pro-my-impressions/
 /posts/how-to-get-elixir-logging-with-recon_trace/
 /blog/2439/
@@ -153883,7 +153883,6 @@ hongchao.me/visualize-alph-vm-execution/
 /2024/08/tips-for-pitching-to-game-publishers.html
 /2024/08/you-cant-spell-webrtc-without-rce-part-3/
 /2024/08/text-editors-with-grammar-tools/
-/2024/07/application-screenshots-on-macos/
 /blog/2024/08/Fantasy-on-a-Fugue-Revisited.html
 /ebpf-tls-tracing-past-present-future/
 /blog/2024_08_09_the_flambda2_snippets_3
@@ -154325,6 +154324,7 @@ hongchao.me/imperfect-perfection/
 /blog/2024/06/25/postgresql-performance-with-different-compilers
 /episodes/from-the-lab-to-the-trading-floor-with-erin-murphy-hD6GHMhc
 /2024/07/you-cant-spell-webrtc-without-rce-part-2/
+/2024/07/application-screenshots-on-macos/
 /keeping-prod-observable/
 /blog/2024_07_01_opam_2_2_0_releases
 /post/a-years-hiatus-with-rust-and-webassembly/
@@ -154662,7 +154662,6 @@ irenezhang.net/blog/2024/07/24/misogyny.html
 /2024/06/16/blender-houdini-tets/
 /download/PagedOut_004_beta1.pdf
 /blog/pinned/announcement/schabi-contract/
-/blog/connecting-anything-to-everything-via-sip/
 /posts/abstractions-best-worst/
 /2024/06/darktable-4.8.0-released/
 /2024/06/19/do-you-really-want-to-write.html
@@ -155113,6 +155112,7 @@ irenezhang.net/blog/2024/07/24/misogyny.html
 /2024/05/14/homebrew-4.3.0/
 /2024/04/25/ab-is-ba/
 /thoughts/hard-and-soft
+/blog/connecting-anything-to-everything-via-sip/
 /blog/improving-performance-on-very-large-calls-introducing-ssrc-rewriting/
 /bigint-money-2/
 /
@@ -169205,7 +169205,6 @@ chriskw.xyz/2026/07/07/Dodecahedra/chriskw.xyz/2019/01/01/Rock-Paper-Scissors/
 /2018/talk-at-siggraph-asia-2018/
 /2018/demoscene-session-at-siggraph-2018/
 /2018/08/09/telephreak-11-badge-update-bugs/
-/clickjacking-privacy-badger.html
 /steps-to-securing-your-online-identity-and-data.html
 /interview-question-iterator-of-iterators-and-cantor-set-theory.html
 /interview-question-generating-all-balanced-parentheses.html
@@ -169571,6 +169570,7 @@ chriskw.xyz/2026/07/07/Dodecahedra/chriskw.xyz/2019/01/01/Rock-Paper-Scissors/
 /2018/texturing-in-a-64kb-intro/
 /2018/07/wireshark-is-now-twenty/
 /@mijordan3/artificial-intelligence-the-revolution-hasnt-happened-yet-5e1d5812e1e7?source=rss-2e99d8165809------2
+/clickjacking-privacy-badger.html
 /preventing-usb-attacks-with-linux-hardened.html
 /blog/mocking-classes-with-typescript/
 /blog/museum-of-the-analog-native/

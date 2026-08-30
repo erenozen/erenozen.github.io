@@ -531,6 +531,11 @@ def main():
             "n_blogs": len(order),
             "n_stories_scanned": n_scanned,
             "hidden_source_mask": HIDDEN_MASK,
+            # Recorded so the next build can be compared against this one.
+            # Everything else in this file describes the index's internal
+            # consistency; these two describe how much of it there is.
+            "n_feed_urls": sum(1 for b in blogs_json if b.get("f")),
+            "n_feed_posts": sum(1 for t in col_tm if t & FLAG_FEED),
             "topics": [{"slug": s, "name": nm} for s, nm in TOPICS],
             "sources": [{"slug": s, "name": nm, "hidden_by_default": h}
                         for s, nm, h in SOURCES],

@@ -103,6 +103,29 @@ def parse_feed(feed_url):
 
 
 DEADLINE = None       # set by main() when TIME_BUDGET is given
+KNOWN = {}            # key -> feed URL (or None for "no feed"), from feed_urls.tsv
+SKIP_NEGATIVE = os.environ.get("SKIP_NEGATIVE", "1") not in ("0", "", "false")
+
+
+def load_known(path):
+    """Feed URLs resolved by an earlier run.
+
+    Discovery is the expensive half of this script: for a blog whose HTML does
+    not advertise a feed, it tries up to 14 candidate paths, each a request with
+    a 15s timeout. Re-deriving an answer we already have, every month, is what
+    made a full pass cost four hours. A seeded blog costs one request.
+    """
+    if not os.path.exists(path):
+        return {}
+    out = {}
+    for line in open(path, encoding="utf-8"):
+        line = line.rstrip("\n")
+        if not line or line.startswith("#"):
+            continue
+        k, _, u = line.partition("\t")
+        if k and u:
+            out[k] = None if u == "-" else u    # "-" means: discovery found nothing
+    return out
 
 
 def handle(blog):
@@ -114,6 +137,21 @@ def handle(blog):
         return None
     home = blog["home"]
     try:
+        if blog["key"] in KNOWN and KNOWN[blog["key"]] is None and SKIP_NEGATIVE:
+            # Known to have no feed. Skipping costs one blog its (already nil)
+            # chance of having added one since; NOT skipping costs 14 timing-out
+            # requests, times 4,350 blogs, every month. Run with SKIP_NEGATIVE=0
+            # to re-derive them and regenerate the seed.
+            return {**blog, "feed": None, "entries": [], "error": "no-feed"}
+        seeded = KNOWN.get(blog["key"])
+        if seeded:
+            entries, ftitle = parse_feed(seeded)
+            if entries:
+                return {**blog, "feed": seeded, "feed_title": ftitle,
+                        "entries": entries, "error": None}
+            # The seeded URL has stopped working -- a blog moved platforms, or
+            # dropped its feed. Fall through to a full discovery rather than
+            # trusting a stale answer forever.
         feed_url = discover_feed(home)
         if not feed_url:
             return {**blog, "feed": None, "entries": [], "error": "no-feed"}
@@ -141,6 +179,13 @@ def main():
     # fetched once would be quoted forever.
     refresh_days = float(os.environ.get("REFRESH_DAYS", "0"))
     now = time.time()
+
+    global KNOWN
+    KNOWN = load_known(os.environ.get(
+        "FEED_URLS",
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "feed_urls.tsv")))
+    if KNOWN:
+        print(f"seeded with {len(KNOWN):,} known feed URLs", flush=True)
 
     blogs = [json.loads(l) for l in open(src)]
 
