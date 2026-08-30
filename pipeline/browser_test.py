@@ -585,7 +585,14 @@ def main():
         # only while the row is wide. On a phone it landed on top of the topic
         # tags -- and on touch, where the hover reveal never fires, it stayed
         # there. Assert no action link overlaps row content at phone width.
-        for url in ("?mode=blogs", "?sort=oldest"):
+        # 600px as well as 360px: just above the 560px breakpoint is where the
+        # floating layout resumes with the least gutter to float into, which is
+        # exactly where it would start colliding again.
+        for width, url in ((360, "?mode=blogs"), (360, "?sort=oldest"),
+                           (600, "?mode=blogs"), (600, "?sort=oldest"),
+                           (768, "?mode=blogs"), (860, "?sort=oldest"),
+                           (900, "?mode=blogs"), (1280, "?sort=oldest")):
+            page.set_viewport_size({"width": width, "height": 800})
             page.goto(base + url, wait_until="load")
             page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
             page.wait_for_selector("#results > li", timeout=20000)
@@ -604,7 +611,7 @@ def main():
                 }
                 return bad;
             }""")
-            check(not clash, f"actions clear row content on a phone ({url})",
+            check(not clash, f"actions clear row content at {width}px ({url})",
                   (clash[0] if clash else "none")[:60])
 
         page.screenshot(path="/tmp/claude-1000/-home-eren-erenozen-github-io/03753368-ccae-4d4c-acb7-2798081f5da3/scratchpad/mobile.png")
@@ -612,6 +619,7 @@ def main():
         # A pinned blog adds a header, a description and a recommendation row
         # above the results. That is the deepest the chrome ever gets, so it is
         # the case worth asserting, not the shallowest.
+        page.set_viewport_size({"width": 360, "height": 640})
         page.goto(base + "?b=jvns.ca", wait_until="load")
         page.wait_for_function("() => !document.querySelector('#q').disabled", timeout=60000)
         page.wait_for_selector("#results > li", timeout=20000)

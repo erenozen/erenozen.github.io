@@ -568,11 +568,18 @@ body {
 }
 
 /* A floating action pill only works while there is empty gutter to float into.
-   At phone width the meta line runs the full row, so an absolutely-positioned
-   RSS or "HN discussion" link lands on top of the topic tags -- and on touch,
-   where the hover reveal never fires, it sits there permanently. Below 560px
-   the actions flow after the row instead of over it. */
-@media (max-width: 560px) {
+   Once the meta line runs the full row the pill lands on top of the topic tags
+   -- and on touch, where the hover reveal never fires, it sits there
+   permanently. Below the breakpoint the actions flow after the row instead.
+
+   The breakpoint is 860px, not a phone width, and the number is not a guess:
+   the content column is capped at --max-w (820px), so at any viewport wider
+   than that plus its padding the row width is CONSTANT, and the floating layout
+   was verified collision-free there. Below it the column is fluid, so no single
+   width proves anything. 560px was the guess, and it left blog rows colliding
+   at 600px ("RSS" over "Graphics & Games") on every tablet and half-width
+   laptop window. */
+@media (max-width: 860px) {
     .results > li .hn-link,
     .row-actions {
         position: static;
