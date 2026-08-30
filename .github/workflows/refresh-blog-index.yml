@@ -71,11 +71,11 @@ jobs:
       - name: Aggregate into candidate blogs
         run: python pipeline/aggregate_domains.py work/hn_stories.jsonl work/candidates.jsonl 3
 
-      # Feed fetching is latency-bound and runs at roughly 50 blogs/min, so a
-      # full pass over 13.4k classified blogs is about four hours -- this job
-      # would simply have timed out, every month, producing nothing. Instead it
-      # is cached, resumable and time-boxed: each run refreshes what it can
-      # within the budget, newest-needed first, and the next run continues.
+      # Feed fetching is latency-bound. Unseeded it ran at ~50 blogs/min, so a
+      # full pass over 13.4k blogs was about four hours and this job would have
+      # timed out every month, producing nothing. It is now cached, resumable,
+      # time-boxed and seeded from pipeline/feed_urls.tsv.
+      #
       # restore/save rather than actions/cache, so the save runs even when a
       # later step fails. actions/cache only saves on success, which would have
       # made a failing run repeat itself forever: the regression guard fails,
@@ -127,16 +127,16 @@ jobs:
             work/expected.jsonl pipeline/classified || \
             echo "::warning::classification coverage is incomplete; index will omit blogs"
 
+      # Keep the index we are about to overwrite, so the new one can be compared
+      # against it. Every other check asks whether the index is internally
+      # consistent, and a much smaller index is perfectly consistent.
+      - name: Snapshot the current index size
+        run: cp blogs/data/meta.json work/prev_meta.json
+
       # dead_urls.txt is the committed distillation of a full HEAD-check crawl
       # (154k URLs, ~10h -- far past this job's budget). Link rot is one-way and
       # concentrated in old posts, so replaying the known-dead set is accurate
       # between crawls; re-run pipeline/check_links.py by hand to refresh it.
-      # Keep the index we are about to overwrite, so the new one can be
-      # compared against it. Every other check asks whether the index is
-      # internally consistent, and a much smaller index is perfectly consistent.
-      - name: Snapshot the current index size
-        run: cp blogs/data/meta.json work/prev_meta.json
-
       - name: Build search index
         run: |
           python pipeline/build_index.py \
